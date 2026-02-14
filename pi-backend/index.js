@@ -3,7 +3,7 @@ import http from 'http';
 const PORT = 3000;
 
 let latestTelemetry = null;
-
+let test;
 const server = http.createServer((req, res) => {
 	// 1. GET request
 	if (req.method === 'GET' && req.url === '/api/telemetry/latest') {
