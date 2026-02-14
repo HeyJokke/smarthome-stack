@@ -1,0 +1,7 @@
+{
+  "folders": [
+    { "path": "pi-backend" },
+    { "path": "esp32-firmware" }
+  ],
+  "settings": {}
+}

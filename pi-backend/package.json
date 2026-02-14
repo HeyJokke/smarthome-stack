@@ -1,0 +1,12 @@
+{
+  "name": "smarthome",
+  "version": "1.0.0",
+  "description": "Node server communicating with ESP32",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joakim Kryger",
+  "license": "ISC"
+}
