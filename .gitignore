@@ -1,6 +1,10 @@
+# Platform IO
 esp32-firmware/.pio
 esp32-firmware/.vscode/.browse.c_cpp.db*
 esp32-firmware/.vscode/c_cpp_properties.json
 esp32-firmware/.vscode/launch.json
 esp32-firmware/.vscode/ipch
 esp32-firmware/include/secrets.h
+
+# Node / Database
+pi-backend/*.sqlite

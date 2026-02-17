@@ -1,48 +1,38 @@
-import http from 'http';
+import express from 'express'
+import db from './db.js'
 
-const PORT = 3000;
+const app = express()
 
-let latestTelemetry = null;
+app.use(express.json())
 
-const server = http.createServer((req, res) => {
-	// 1. GET request
-	if (req.method === 'GET' && req.url === '/api/telemetry/latest') {
-		res.writeHead(200, { 'Content-Type': 'application/json' });
-		res.end(JSON.stringify(latestTelemetry ?? { error: 'No data yet' }));
+// GET Endpoint
+app.get('/test', (req, res) => {
+	db.all('SELECT * FROM test', (err, rows) => {
+		if (err) return res.status(500).json({ error: err.message })
+		res.json(rows)
+	})
+})
 
-		return;
-	};
+// POST Endpoint
+app.post('/test', (req, res) => {
+	const value = req.body?.value
+	console.log(value)
+	if (typeof value !== 'string' || value.trim() === '') {
+		console.log(typeof value)
+		return res.status(400).json({ ok: false, ID: null, error: 'Value must be a non-empty string' })
+	}
 
-	// 2. POST request TEST
-	if (req.method === 'POST' && req.url === '/api/telemetry') {
-		let body = '';
+	db.run(
+		'INSERT INTO test (value) VALUES (?)',
+		[value.trim()],
+		function (err) {
+			if (err) return res.status(500).json({ ok: false, ID: null, error: 'Could not return value from database' })
 
-		req.on('data', (chunk) => {
-			body += chunk;
-		});
+			return res.status(201).json({ ok: true, ID: this.lastID, error: null })
+		}
+	)
+})
 
-		req.on('end', () => {
-			try {
-				const parsed = JSON.parse(body);
-
-				latestTelemetry = parsed;
-
-				res.writeHead(200, { 'Content-Type': 'application/json' });
-				res.end(JSON.stringify({ 'ok': true, 'error': null }));
-			} catch(err) {
-				res.writeHead(400, { 'Content-Type': 'application/json' });
-				res.end(JSON.stringify({ 'ok': false, 'error': 'Invalid JSON' }));
-			};
-		});
-
-		return;
-	};
-
-	// 3. Fallback
-	res.writeHead(404, { 'Content-Type': 'application/json' });
-	res.end(JSON.stringify({ 'error': '404 not found' }));
-});
-
-server.listen(PORT, '0.0.0.0', () => {
-	console.log(`Server running smoofly at http://localhost:${PORT}/`);
-});
+app.listen(3000, () => {
+	console.log('Server running on http://localhost:3000')
+})
