@@ -17,7 +17,7 @@ app.get('/telemetry/latest', (req, res) => {
 	)
 })
 
-// POST Endpoint for telemetry TEST
+// POST Endpoint for telemetry
 app.post('/telemetry', (req, res) => {
 	const {machine_id, timestamp, temperature} = req.body
 	const payload = JSON.stringify(req.body)
