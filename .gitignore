@@ -8,3 +8,7 @@ esp32-firmware/include/secrets.h
 
 # Node / Database
 pi-backend/*.sqlite
+**/node_modules/
+**/*.log
+.env
+.env.*
