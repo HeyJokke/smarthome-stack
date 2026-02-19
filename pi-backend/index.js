@@ -22,24 +22,25 @@ app.post('/telemetry', (req, res) => {
 	const {machine_id, temperature} = req.body
 	const timestamp_iso = new Date().toISOString()
 	const timestamp_ms = Date.now()
-
-	const payload = JSON.stringify({...req.body, timestamp_iso})
-
+	
 	// Check for not null constraints and types
 	const machineId = typeof machine_id === 'string' ? machine_id.trim() : ''
 	if (!machineId) {
 		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Machine_id not correctly defined'})
 	}
-	if (!timestamp_ms || !Number.isFinite(timestamp_ms)) {
+	if (!Number.isFinite(timestamp_ms)) {
 		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Server timestamp failed'})
 	}
-	if (typeof temperature !== 'number' || isNaN(temperature)) {
+	const temp = temperature === undefined || temperature === null ? null : Number(temperature)
+	if (temp === null || !Number.isFinite(temperature)) {
 		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Temperature is either NULL or not a number'})
 	}
 
+	const payload = JSON.stringify({...req.body, machine_id: machineId, timestamp_iso})
+	
 	db.run(
 		'INSERT INTO telemetry(machine_id, timestamp, temperature, payload) VALUES (?, ?, ?, ?)',
-		[machineId, timestamp_ms, temperature ?? null, payload ?? null],
+		[machineId, timestamp_ms, temp, payload ?? null],
 		function (err) {
 			if (err) return res.status(500).json({ ok: false, payload: null ,error: err.message })
 
@@ -48,7 +49,7 @@ app.post('/telemetry', (req, res) => {
 					id: this.lastID,
 					machine_id: machineId,
 					timestamp: timestamp_ms,
-					temperature: temperature ?? null
+					temperature: temp
 				}, error: null })
 		}
 	)
