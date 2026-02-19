@@ -19,21 +19,23 @@ app.get('/telemetry/latest', (req, res) => {
 
 // POST Endpoint for telemetry
 app.post('/telemetry', (req, res) => {
-	const {machine_id, timestamp, temperature} = req.body
-	const payload = JSON.stringify(req.body)
-	const ts = Number(timestamp)
+	const {machine_id, temperature} = req.body
+	const timestamp_iso = new Date().toISOString()
+	const timestamp_ms = Date.now()
+
+	const payload = JSON.stringify({...req.body, timestamp_iso})
 
 	// Check for not null constraints and types
-	if (typeof machine_id !== 'string' || !machine_id.trim() || !ts) {
-		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Machine_id can not be NULL and needs to be a string'})
+	if (typeof machine_id !== 'string' || !machine_id.trim() || !timestamp_ms) {
+		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Machine_id not correctly defined'})
 	}
-	if (!ts || !Number.isFinite(ts)) {
-		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Timestamp can not be NULL and needs to be a number'})
+	if (!timestamp_ms || !Number.isFinite(timestamp_ms)) {
+		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Server timestamp failed'})
 	}
 
 	db.run(
 		'INSERT INTO telemetry(machine_id, timestamp, temperature, payload) VALUES (?, ?, ?, ?)',
-		[machine_id, timestamp, temperature ?? null, payload ?? null],
+		[machine_id, timestamp_ms, temperature ?? null, payload ?? null],
 		function (err) {
 			if (err) return res.status(500).json({ ok: false, payload: null ,error: err.message })
 
@@ -41,7 +43,7 @@ app.post('/telemetry', (req, res) => {
 				payload: {
 					id: this.lastID,
 					machine_id: machine_id.trim(),
-					timestamp: ts,
+					timestamp: timestamp_ms,
 					temperature: temperature ?? null
 				}, error: null })
 		}

@@ -11,7 +11,7 @@ int LED = 27;
 int tempPin = 34;
 int photosensPin = 35;
 
-unsigned long uptime;
+unsigned long uptime_ms;
 char ledStatus[8] = "";
 const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/api/telemetry";
 int tempStatus;
@@ -83,12 +83,12 @@ void handlePhotosensitive() {
 void handleStatus() {
   tempStatus = readTemp() * 100;
   photosens = readPhotosens();
-  uptime = millis();
+  uptime_ms = millis();
 
   String jsonLedStatus = "\"LED\": \"" + String(ledStatus) + "\"";
   String jsonTempStatus = "\"Temperature\": " + String(tempStatus);
   String jsonPhotosens = "\"Photosensitivity\": " + String(photosens);
-  String jsonUptimeStatus = "\"Uptime\": " + String(uptime);
+  String jsonUptimeStatus = "\"Uptime\": " + String(uptime_ms);
 
   String jsonDeviceStatus = "{";
   jsonDeviceStatus += jsonLedStatus + ",";
