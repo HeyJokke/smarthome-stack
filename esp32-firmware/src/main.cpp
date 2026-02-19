@@ -13,7 +13,8 @@ int photosensPin = 35;
 
 unsigned long uptime_ms;
 char ledStatus[8] = "";
-const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/api/telemetry";
+const char* machine_id = "esp32-1";
+const char* PI_TELEMETRY_URL = "http://192.168.0.53:3000/telemetry";
 int tempStatus;
 int photosens;
 
@@ -107,23 +108,38 @@ void postTest() {
     return;
   };
 
+  const float temperature = readTemp();
+
   HTTPClient http;
   Serial.println("postTest: HTTP client has been created");
 
   http.begin(PI_TELEMETRY_URL);
   http.addHeader("Content-Type", "application/json");
 
-  const char* body = "{\"temp\": 260}";
+  String jsonMachineId = "\"machine_id\": \"" + String(machine_id) + "\"";
+  String jsonTemp = "\"temperature\": \"" + String(temperature, 2) + "\"";
 
-  Serial.println("postTest: Sending POST request...");
+  String body = "{";
+  body += jsonMachineId + ",";
+  body += jsonTemp;
+  body += "}";
+
+  Serial.println(body);
+
   int code = http.POST(body);
 
-  Serial.print("postTest: Pi HTTP code = ");
+  Serial.print("Pi HTTP Code => ");
   Serial.println(code);
 
-  String response = http.getString();
-  Serial.print("postTest: Response = ");
-  Serial.print(response);
+  // Error code
+  if (code > 0) {
+    String response = http.getString();
+    Serial.print("postTest: Response = ");
+    Serial.println(response);
+  } else {
+    Serial.print("postTest: Error: ");
+    Serial.println(http.errorToString(code));
+  };
 
   http.end();
 }
@@ -171,12 +187,11 @@ void setup() {
   Serial.print("\nHTTP server started on ");
   Serial.println(WiFi.localIP());
 
-  // Set up HTTP client
   postTest();
 }
 
-
-
 void loop() {
-  server.handleClient();  
+  server.handleClient();
+
+  delay(60000);
 }

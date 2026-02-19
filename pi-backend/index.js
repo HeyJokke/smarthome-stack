@@ -22,6 +22,9 @@ app.post('/telemetry', (req, res) => {
 	const {machine_id, temperature} = req.body
 	const timestamp_iso = new Date().toISOString()
 	const timestamp_ms = Date.now()
+
+	console.log("POST /telemetry content-type:", req.headers["content-type"])
+	console.log("POST /telemetry raw body:", req.body)
 	
 	// Check for not null constraints and types
 	const machineId = typeof machine_id === 'string' ? machine_id.trim() : ''
