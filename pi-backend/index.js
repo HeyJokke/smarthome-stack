@@ -26,23 +26,27 @@ app.post('/telemetry', (req, res) => {
 	const payload = JSON.stringify({...req.body, timestamp_iso})
 
 	// Check for not null constraints and types
-	if (typeof machine_id !== 'string' || !machine_id.trim() || !timestamp_ms) {
+	const machineId = typeof machine_id === 'string' ? machine_id.trim() : ''
+	if (!machineId) {
 		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Machine_id not correctly defined'})
 	}
 	if (!timestamp_ms || !Number.isFinite(timestamp_ms)) {
 		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Server timestamp failed'})
 	}
+	if (typeof temperature !== 'number' || isNaN(temperature)) {
+		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Temperature is either NULL or not a number'})
+	}
 
 	db.run(
 		'INSERT INTO telemetry(machine_id, timestamp, temperature, payload) VALUES (?, ?, ?, ?)',
-		[machine_id, timestamp_ms, temperature ?? null, payload ?? null],
+		[machineId, timestamp_ms, temperature ?? null, payload ?? null],
 		function (err) {
 			if (err) return res.status(500).json({ ok: false, payload: null ,error: err.message })
 
 			return res.status(201).json({ ok: true, 
 				payload: {
 					id: this.lastID,
-					machine_id: machine_id.trim(),
+					machine_id: machineId,
 					timestamp: timestamp_ms,
 					temperature: temperature ?? null
 				}, error: null })
