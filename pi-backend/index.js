@@ -32,7 +32,7 @@ app.post('/telemetry', (req, res) => {
 		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Server timestamp failed'})
 	}
 	const temp = temperature === undefined || temperature === null ? null : Number(temperature)
-	if (temp === null || !Number.isFinite(temperature)) {
+	if (temp === null || !Number.isFinite(temp)) {
 		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Temperature is either NULL or not a number'})
 	}
 
