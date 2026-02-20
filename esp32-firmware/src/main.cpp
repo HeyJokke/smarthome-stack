@@ -14,7 +14,7 @@ int photosensPin = 35;
 unsigned long uptime_ms;
 char ledStatus[8] = "";
 const char* machine_id = "esp32-1";
-const char* PI_TELEMETRY_URL = "http://192.168.0.53:3000/telemetry";
+const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/telemetry";
 int tempStatus;
 int photosens;
 
@@ -117,7 +117,7 @@ void postTest() {
   http.addHeader("Content-Type", "application/json");
 
   String jsonMachineId = "\"machine_id\": \"" + String(machine_id) + "\"";
-  String jsonTemp = "\"temperature\": \"" + String(temperature, 2) + "\"";
+  String jsonTemp = "\"temperature\": " + String(temperature, 2);
 
   String body = "{";
   body += jsonMachineId + ",";
@@ -193,5 +193,7 @@ void setup() {
 void loop() {
   server.handleClient();
 
-  delay(60000);
+  delay(10000);
+
+  postTest();
 }

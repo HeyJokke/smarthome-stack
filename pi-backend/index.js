@@ -59,5 +59,5 @@ app.post('/telemetry', (req, res) => {
 })
 
 app.listen(3000, () => {
-	console.log('Server running on http://localhost:3000')
+	console.log('Server running on http://192.168.0.63:3000')
 })
