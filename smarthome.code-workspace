@@ -1,7 +1,8 @@
 {
   "folders": [
     { "path": "pi-backend" },
-    { "path": "esp32-firmware" }
+    { "path": "esp32-firmware" },
+    { "path": "dashboard" }
   ],
   "settings": {}
 }
