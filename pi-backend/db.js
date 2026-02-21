@@ -31,6 +31,8 @@ db.serialize(() => {
             machine_id TEXT NOT NULL,
             timestamp INTEGER NOT NULL,
             temperature REAL,
+            machine_uptime_ms INT NOT NULL,
+            photo_sens INT NOT NULL,
             payload TEXT
         )`
     )

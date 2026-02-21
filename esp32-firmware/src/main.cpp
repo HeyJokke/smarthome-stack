@@ -6,12 +6,14 @@
 #include "HTTPClient.h"
 
 WebServer server(80);
+WiFiClient client;
 
 int LED = 27;
 int tempPin = 34;
 int photosensPin = 35;
 
 unsigned long uptime_ms;
+unsigned long lastPostMs = 0;
 char ledStatus[8] = "";
 const char* machine_id = "esp32-1";
 const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/telemetry";
@@ -109,22 +111,34 @@ void postTest() {
   };
 
   const float temperature = readTemp();
+  const int photo_sens = readPhotosens();
+  uptime_ms = millis();
 
   HTTPClient http;
-  Serial.println("postTest: HTTP client has been created");
 
-  http.begin(PI_TELEMETRY_URL);
+  http.setTimeout(8000);
+  http.setReuse(false);
+
+  http.begin(client, PI_TELEMETRY_URL);
   http.addHeader("Content-Type", "application/json");
+  http.addHeader("Connection", "close");
 
-  String jsonMachineId = "\"machine_id\": \"" + String(machine_id) + "\"";
-  String jsonTemp = "\"temperature\": " + String(temperature, 2);
+  String jsonMachineId = "\"machine_id\":\"" + String(machine_id) + "\"";
+  String jsonTemp = "\"temperature\":" + String(temperature, 2);
+  String jsonPhotoSens = "\"photo_sens\":" + String(photo_sens);
+  String jsonUptimeMs = "\"uptime_ms\":" + String(uptime_ms);
 
   String body = "{";
   body += jsonMachineId + ",";
-  body += jsonTemp;
+  body += jsonTemp + ",";
+  body += jsonPhotoSens + ",";
+  body += jsonUptimeMs;
   body += "}";
 
+  Serial.print(body.length());
   Serial.println(body);
+
+  http.addHeader("Content-Length", String(body.length()));
 
   int code = http.POST(body);
 
@@ -193,7 +207,14 @@ void setup() {
 void loop() {
   server.handleClient();
 
-  delay(10000);
+  unsigned long now = millis();
 
-  postTest();
+  // Non-blocking loop for POST status
+  if (now - lastPostMs >= 30000) {
+    lastPostMs = now;
+    postTest();
+  }
+
+  delay(10);
+
 }
