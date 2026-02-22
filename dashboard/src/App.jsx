@@ -1,33 +1,78 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import React from 'react'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isOn, setIsOn] = React.useState(false)
+  const [isBusy, setIsBusy] = React.useState(false)
+  const [error, setError] = React.useState(null)
+  
+  const ESP32_BASE = '/esp32'
+  
+  async function toggleLed() {
+    try {
+      setIsBusy(true)
+      setError(null)
+      
+      const next = !isOn
+      const path = next ? '/led/on' : '/led/off'
+      
+      const res = await fetch(`${ESP32_BASE}${path}`)
+      
+      if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+        
+        setIsOn(next)
+      } catch(err) {
+        setError(err?.message ?? 'An unknown error occured')
+        console.error(error)
+      } finally {
+        setIsBusy(false)
+      }
+    }
+
+    React.useEffect(() => {
+      async function getLedStatus() {
+        try {
+          setIsBusy(true)
+          setError(null)
+
+          const res = await fetch(`${ESP32_BASE}/status`)
+          if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+
+          const data = await res.json()
+  
+          if (data.LED === 'ON') {
+            setIsOn(true)
+          }
+          if (data.LED === 'OFF') {
+            setIsOn(false)
+          }
+        } catch(err) {
+          setError(err?.message ?? 'An unknown error occured')
+          console.error(error)
+        } finally {
+          setIsBusy(false)
+        }
+      }
+      
+      getLedStatus()
+    }, [])
+    
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>SmartHome</h1>
+      <button 
+        className={`
+          smartCard 
+          ${(isBusy && !error) ? 'busy' : null} 
+          ${(isOn && !isBusy  && !error) ? 'on' : null} 
+          ${error ? 'error' : null}
+        `}
+        onClick={toggleLed}
+        disabled={isBusy}
+      >
+        <h3>Living Room</h3>
+      </button>
     </>
   )
 }

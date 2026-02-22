@@ -3,6 +3,9 @@ import db from './db.js'
 import cors from 'cors'
 
 const app = express()
+const DEVICES = {
+	"esp32-1": "http://192.168.0.60"
+}
 
 app.use(cors({
 	origin: 'http://localhost:5173'
