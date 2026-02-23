@@ -1,30 +1,115 @@
+html {
+  background-color: #181A1B;
+}
+
 #root {
   max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  margin: 0 20px;
+  padding: 1rem;
   text-align: center;
 }
 
-.smartCard {
+h1,h2,h3,h4 {
+  color: white;
+}
+
+p {
+  color: white;
+}
+
+.smarthome-grid-div {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  grid-column-gap: 8px;
+  grid-row-gap: 8px;
+}
+
+.smartcard-wrapper {
+  display: inline-block;
+  position: relative;
+}
+
+.smartcard-overlay {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position:absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.60);
+  border-radius: 10px;
+  z-index: 10;
+  backdrop-filter: blur(2px);
+}
+
+.smartcard-overlay-retry-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  border: none;
+  background-color: rgba(0, 0, 0, 0);
+  font-size: 15px;
+  text-shadow: 0px 0px 15px rgb(0, 0, 0);
+}
+
+.smartCard {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 90px;
+  height: 130px;
   margin: auto;
-  background-color: darkgrey;
-  border: 3px solid darkblue;
+  background-color: #494F52;
+  border: 3px solid darkcyan;
+  box-shadow: 0 0 15px 4px darkcyan;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.upperCardDiv {
+  display: flex;
+  justify-content: space-between;
+  height: 50%;
+  margin: 0;
+}
+
+.lowerCardDiv {
+  display: flex;
+  justify-content: space-between;
+  height: 50%;
+  margin: 0;
+}
+
+.lowerLeftCardDiv {
+  text-align: left;
+}
+
+.smartCardLogoDiv {
+  margin: auto 0;
+  background-color: #282b2e;
+  padding: 8px 8px;
   border-radius: 10px;
 }
 
-.on {
-  box-shadow: 0 0 10px 8px lightgreen;
-  border: 3px solid lightgreen;
+.smartCardLogoDiv.on {
+  background-color: rgb(3, 181, 3);
 }
 
-.busy {
-  border: 3px solid orange;
-  box-shadow: 0 0 3px 1px orange;
+.smartCardLogo {
+  width: 20px;
+  height: 20px;
+  color: white;
+}
+
+button.on {
+  box-shadow: 0 0 10px 8px lightgreen;
+  border: 3px solid rgb(4, 244, 4);
+}
+
+button.busy {
+  box-shadow: 0 0 3px 1px rgb(255, 166, 0);
+  border: 3px solid rgb(255, 234, 0);
   animation: breathe 3s infinite;
 }
 
@@ -32,7 +117,74 @@
   50% {box-shadow: 0 0 15px 1px orange;}
 }
 
-.error {
+button.error {
+  box-shadow: 0 0 15px 4px rgb(201, 0, 0);
   border: 3px solid red;
-  box-shadow: 0 0 10px 1px red;
+}
+
+p.on {
+  color: rgb(4, 244, 4);
+}
+
+p.busy {
+  color: orange;
+}
+
+p.error {
+  color: red;
+}
+
+input[type=checkbox] {
+  display:none;
+}
+.slide-toggle {
+    display: block;
+    position: relative;
+    flex: none;
+    width: 50px;
+    height: 30px;
+    border-radius: 30px;
+    background-color: #18191b;
+    transition: all 0.1s ease-in-out;
+    z-index: 1;
+    margin: 10px;
+
+    &::before,
+    &::after {
+        content: ' ';
+        display: block;
+        position: absolute;
+        top: 1px;
+        border-radius: 30px;
+        height: 28px;
+        background-color: #282b2e;
+        transform: translate3d(0,0,0);
+        transition: 0.2s cubic-bezier(0, 1.1, 1, 1.1);;
+    }
+
+    &::before {
+        z-index: -1;
+        width: 48px;
+        right: 1px;
+        transform: scale(1);
+    }
+
+    &::after {
+        z-index: 1;
+        width: 28px;
+        left: 1px;
+        box-shadow: 0 1px 4px 0.5px rgba(0, 0, 0, 0.25);
+    }
+
+    input:checked + & {
+        background-color: rgb(4, 244, 4);
+
+        &::before {
+            transform: scale(0);
+        }
+
+        &::after {
+            transform: translate3d(20px,0,0);
+        }
+    }
 }
