@@ -6,6 +6,8 @@ export function useEsp32Led({ baseUrl } = {}) {
     const [isBusy, setIsBusy] = React.useState(false)
     const [actionError, setActionError] = React.useState(null)
     const [statusError, setStatusError] = React.useState(null)
+    
+    // Device configurations
     const ESP32_BASE = baseUrl
 
     async function toggleLed() {
