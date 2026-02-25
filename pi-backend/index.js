@@ -12,10 +12,6 @@ const DEVICES = {
 	"esp32-1": "http://192.168.0.60"
 }
 
-app.use(cors({
-	origin: 'http://localhost:5173'
-}))
-
 app.use(express.json())
 
 // POST Endpoint for telemetry
@@ -137,7 +133,7 @@ app.get('/telemetry', (req, res) => {
 const distPath = path.join(__dirname, "../dashboard/dist");
 app.use(express.static(distPath));
 
-app.get("*", (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
