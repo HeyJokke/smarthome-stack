@@ -1,5 +1,12 @@
 import express from 'express'
 import db from './db.js'
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
+
+// ESM __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express()
 const DEVICES = {
@@ -7,8 +14,6 @@ const DEVICES = {
 }
 
 app.use(express.json())
-
-
 
 // GET Endpoint for latest telemetry
 app.get('/telemetry/latest', (req, res) => {
@@ -124,6 +129,12 @@ app.post('/telemetry', (req, res) => {
 		}
 	)
 })
+
+// Serve dashboard build
+const distPath = path.join(__dirname, "../dashboard/dist");
+console.log("[static] distPath =", distPath, "exists =", fs.existsSync(distPath));
+
+app.use(express.static(distPath));
 
 app.listen(3000, () => {
 	console.log('Server running on http://192.168.0.63:3000')
