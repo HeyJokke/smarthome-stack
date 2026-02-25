@@ -3,7 +3,7 @@ import { useEsp32Led } from './hooks/useEsp32Led'
 import SmartCard from './components/smartCard';
 
 function App() {
-  const livingRoom = useEsp32Led({baseUrl: 'http://192.168.0.63'})
+  const livingRoom = useEsp32Led({baseUrl: 'http://192.168.0.60'})
 
   return (
     <>
