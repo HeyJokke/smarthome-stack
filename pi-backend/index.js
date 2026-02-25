@@ -15,6 +15,34 @@ const DEVICES = {
 
 app.use(express.json())
 
+app.all("/esp32/*", async (req, res) => {
+  try {
+    const ESP_BASE = "http://192.168.0.60";
+
+    const targetPath = req.originalUrl.replace("/esp32", "");
+
+    const response = await fetch(`${ESP_BASE}${targetPath}`, {
+      method: req.method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: req.method !== "GET" ? JSON.stringify(req.body) : undefined,
+    });
+
+    const contentType = response.headers.get("content-type");
+    if (contentType) {
+      res.setHeader("content-type", contentType);
+    }
+
+    const text = await response.text();
+    res.status(response.status).send(text);
+
+  } catch (err) {
+    console.error("ESP proxy error:", err);
+    res.status(502).json({ error: "ESP32 unreachable" });
+  }
+});
+
 // GET Endpoint for latest telemetry
 app.get('/telemetry/latest', (req, res) => {
 	db.get(
