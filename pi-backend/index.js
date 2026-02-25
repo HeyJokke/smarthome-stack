@@ -1,7 +1,5 @@
 import express from 'express'
 import db from './db.js'
-import cors from 'cors'
-import path from "path";
 
 const app = express()
 const DEVICES = {
@@ -9,6 +7,62 @@ const DEVICES = {
 }
 
 app.use(express.json())
+
+
+
+// GET Endpoint for latest telemetry
+app.get('/telemetry/latest', (req, res) => {
+	db.get(
+		'SELECT * FROM telemetry ORDER BY timestamp DESC LIMIT 1',
+		function (err, row) {
+			if (err) return res.status(500).json({ ok: false, payload: null, error: err.message })
+			if (!row) return res.status(404).json({ ok: false, payload: null, error: 'ERROR 404 row could not fetch row data, possibly no connection to the DB or there are no rows'})
+				
+			return res.status(200).json({ 
+				ok: true, 
+				payload: {
+					...row,
+					payload_obj: JSON.parse(row.payload)
+				}, 
+				error: null 
+			})
+		}
+	)
+})
+
+// GET Endpoint for telemetry with limit
+app.get('/telemetry', (req, res) => {
+	let limit = Number(req.query.limit ?? 0)
+
+	if (!Number.isFinite(limit) || limit <= 0) {
+		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Add a valid query ?limit to the request... ?limit=(number > 0)'})
+	}
+
+	if (limit > 1000) limit = 1000
+
+	db.all(
+		`SELECT * FROM telemetry ORDER BY timestamp DESC LIMIT (?)`,
+		[limit],
+		(err, rows) => {
+			if (err) {
+				return res.status(500).json({ ok: false, payload: null, error: err.message })
+			}
+
+			const rowsMapped = (rows ?? []).map((row) => {
+				return {
+					...row,
+					payload_obj: JSON.parse(row.payload)
+				}
+			})
+
+			return res.status(200).json({
+				ok: true,
+				payload: rowsMapped,
+				error: null
+			})
+		}
+	)
+})
 
 // POST Endpoint for telemetry
 app.post('/telemetry', (req, res) => {
@@ -67,60 +121,6 @@ app.post('/telemetry', (req, res) => {
 					id: this.lastID,
 					...canonicalPayload
 				}, error: null })
-		}
-	)
-})
-
-// GET Endpoint for latest telemetry
-app.get('/telemetry/latest', (req, res) => {
-	db.get(
-		'SELECT * FROM telemetry ORDER BY timestamp DESC LIMIT 1',
-		function (err, row) {
-			if (err) return res.status(500).json({ ok: false, payload: null, error: err.message })
-			if (!row) return res.status(404).json({ ok: false, payload: null, error: 'ERROR 404 row could not fetch row data, possibly no connection to the DB or there are no rows'})
-				
-			return res.status(200).json({ 
-				ok: true, 
-				payload: {
-					...row,
-					payload_obj: JSON.parse(row.payload)
-				}, 
-				error: null 
-			})
-		}
-	)
-})
-
-// GET Endpoint for telemetry with limit
-app.get('/telemetry', (req, res) => {
-	let limit = Number(req.query.limit ?? 0)
-
-	if (!Number.isFinite(limit) || limit <= 0) {
-		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Add a valid query ?limit to the request... ?limit=(number > 0)'})
-	}
-
-	if (limit > 1000) limit = 1000
-
-	db.all(
-		`SELECT * FROM telemetry ORDER BY timestamp DESC LIMIT (?)`,
-		[limit],
-		(err, rows) => {
-			if (err) {
-				return res.status(500).json({ ok: false, payload: null, error: err.message })
-			}
-
-			const rowsMapped = (rows ?? []).map((row) => {
-				return {
-					...row,
-					payload_obj: JSON.parse(row.payload)
-				}
-			})
-
-			return res.status(200).json({
-				ok: true,
-				payload: rowsMapped,
-				error: null
-			})
 		}
 	)
 })
