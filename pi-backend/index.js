@@ -2,10 +2,6 @@ import express from 'express'
 import db from './db.js'
 import cors from 'cors'
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express()
 const DEVICES = {
@@ -128,14 +124,6 @@ app.get('/telemetry', (req, res) => {
 		}
 	)
 })
-
-// Serve Vite build (dashboard/dist) from backend
-const distPath = path.join(__dirname, "../dashboard/dist");
-app.use(express.static(distPath));
-
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(distPath, "index.html"));
-});
 
 app.listen(3000, () => {
 	console.log('Server running on http://192.168.0.63:3000')
