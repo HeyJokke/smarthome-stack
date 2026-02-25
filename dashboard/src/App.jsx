@@ -8,11 +8,25 @@ function App() {
   return (
     <>
       <h1>SmartHome</h1>
-      <SmartCard
-        title={'Living Room'}
-        icon={'led'}
-        {...livingRoom}
-      />
+      <div className='smarthome-grid-div'>
+        <SmartCard
+          title={'Living Room'}
+          icon={'led'}
+          {...livingRoom}
+        />
+        <SmartCard
+          title={'Sove Room'}
+          icon={'led'}
+        />
+        <SmartCard
+          title={'Toilet Room'}
+          icon={'led'}
+        />
+        <SmartCard
+          title={'Kitchen Room'}
+          icon={'led'}
+        />
+      </div>
     </>
   )
 }
