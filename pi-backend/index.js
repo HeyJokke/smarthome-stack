@@ -137,7 +137,6 @@ app.get('/telemetry', (req, res) => {
 const distPath = path.join(__dirname, "../dashboard/dist");
 app.use(express.static(distPath));
 
-// SPA fallback (must be AFTER API routes)
 app.get("*", (req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
