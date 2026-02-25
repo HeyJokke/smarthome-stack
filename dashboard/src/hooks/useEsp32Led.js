@@ -65,7 +65,7 @@ export function useEsp32Led({ baseUrl } = {}) {
         }, 1000)
 
         return () => clearInterval(id)
-    },[isBusy, getLedStatus, statusError])
+    },[isBusy, getLedStatus])
 
     return {
         isOn,
