@@ -2,7 +2,6 @@ import express from 'express'
 import db from './db.js'
 import path from "path";
 import { fileURLToPath } from "url";
-import fs from "fs";
 import { fetchWithRetry } from './utils/fetchWithRetry.js';
 
 // ESM __dirname
@@ -50,20 +49,20 @@ app.all(/^\/esp32(\/.*)?$/, async (req, res) => {
 });
 
 // ----------------GET Endpoints----------------
-// Status from all devices
-app.get('/api/devices/:id/status', (req, res) => {
+// Status from all devices for frontend
+app.get('/api/devices/:id/status', async (req, res) => {
 	const device = getDeviceOr404(req.params.id, res)
+	console.log(req.params.id, device.baseUrl)
 	if (!device) return
 
 	try {
-		const res = fetchWithRetry(`${device.baseUrl}/status`)
+		const upstreamRes = await fetchWithRetry(`${device.baseUrl}/status`)
 
-		if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+		if (!upstreamRes.ok) throw new Error(`HTTP error: ${res.status}`)
 
-		const data = res.json()
+		const data = await upstreamRes.json()
 
-		console.log(data)
-
+		res.status(200).json(data)
 	} catch(err) {
 		console.error(`ERROR: ${req.params.id} connection failed: ${err.message}`)
 		res.status(502).json({ error: err.message })
@@ -125,6 +124,7 @@ app.get('/telemetry', (req, res) => {
 })
 
 // ----------------POST Endpoints----------------
+
 // Telemetry
 app.post('/telemetry', (req, res) => {
 	const {machine_id, temperature, photo_sens, uptime_ms} = req.body
