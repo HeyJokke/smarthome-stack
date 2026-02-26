@@ -10,7 +10,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express()
 const DEVICES = {
-	"esp32-1": "http://192.168.0.60"
+	livingroom: { baseUrl: "http://192.168.0.70" },
+	livingroom: { baseUrl: "http://192.168.0.71" },
+	livingroom: { baseUrl: "http://192.168.0.72" }
 }
 
 app.use(express.json())
