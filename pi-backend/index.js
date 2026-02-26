@@ -19,7 +19,7 @@ app.use(express.json())
 
 app.all(/^\/esp32(\/.*)?$/, async (req, res) => {
   try {
-    const ESP_BASE = "http://192.168.0.60";
+    const ESP_BASE = "http://192.168.0.70";
 
     const targetPath = req.originalUrl.replace(/^\/esp32/, "") || "/";
 
