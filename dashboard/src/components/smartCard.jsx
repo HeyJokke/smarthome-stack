@@ -7,7 +7,7 @@ const iconsObj = {
   'default': CircleQuestionMark
 }
 
-export default function SmartCard({title = 'No name', icon, isOn, isBusy, actionError, statusError, toggleLed}) {  
+export default function SmartCard({title = 'No name', icon, temp, isOn, isBusy, actionError, statusError, toggleLed}) {  
   const IconComponent = iconsObj[icon] ?? iconsObj.default
   
   return (
@@ -35,12 +35,15 @@ export default function SmartCard({title = 'No name', icon, isOn, isBusy, action
         <div className='lowerCardDiv'>
           <div className='lowerLeftCardDiv'>
             <h3 className='smartCardTitle' style={{margin: '5px 0'}}>{title}</h3>
-            <p className={`
-              ${(isBusy && !actionError) ? 'busy' : null} 
-              ${(isOn && !isBusy  && !actionError) ? 'on' : null} 
-              ${actionError || statusError ? 'error' : null}
-            `} 
-            style={{margin: '5px 0'}}>{actionError || statusError ? 'Error' : isBusy ? 'Busy' : isOn ? 'On' : 'Off'}</p>
+            <div style={{display: 'flex', justifyContent: 'space-between'}}>
+              <p className={`
+                ${(isBusy && !actionError) ? 'busy' : null} 
+                ${(isOn && !isBusy  && !actionError) ? 'on' : null} 
+                ${actionError || statusError ? 'error' : null}
+              `} 
+              style={{margin: '5px 0'}}>{actionError || statusError ? 'Error' : isBusy ? 'Busy' : isOn ? 'On' : 'Off'}</p>
+              <p style={{margin: '5px 0'}}>{temp}</p>
+            </div>
           </div>
         </div>
       </button>

@@ -6,6 +6,7 @@ export function useEsp32Led() {
     const [isBusy, setIsBusy] = React.useState(false)
     const [actionError, setActionError] = React.useState(null)
     const [statusError, setStatusError] = React.useState(null)
+    const [temp, setTemp] = React.useState(0)
     
     // Device configurations
     const API_BASE = import.meta.env.VITE_API_BASE ?? ""
@@ -39,7 +40,8 @@ export function useEsp32Led() {
             const data = await res.json()
             setActionError(null)
             setStatusError(null)
-      
+
+            setTemp(data.Temperature)
             if (data.LED === 'ON') {
               setIsOn(true)
             } else if (data.LED === 'OFF') {
@@ -67,6 +69,7 @@ export function useEsp32Led() {
     },[isBusy, getLedStatus])
 
     return {
+        temp,
         isOn,
         isBusy,
         actionError,

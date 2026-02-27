@@ -14,18 +14,6 @@ function App() {
           icon={'led'}
           {...livingRoom}
         />
-        <SmartCard
-          title={'Sove Room'}
-          icon={'led'}
-        />
-        <SmartCard
-          title={'Toilet Room'}
-          icon={'led'}
-        />
-        <SmartCard
-          title={'Kitchen Room'}
-          icon={'led'}
-        />
       </div>
     </>
   )
