@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/esp32': {
-        target: 'http://192.168.0.60', // <-- ESP32 IP
+        target: 'http://192.168.0.70',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/esp32/, ''),
       },

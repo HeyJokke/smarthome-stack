@@ -9,20 +9,18 @@ export function useEsp32Led({ baseUrl } = {}) {
     
     // Device configurations
     const ESP32_BASE = baseUrl
+    const PI_BACKEND = 'http://192.168.0.63'
 
     async function toggleLed() {
     try {
         setIsBusy(true)
         setActionError(null)
-        
-        const next = !isOn
-        const path = next ? '/led/on' : '/led/off'
+        const path = !isOn ? true : false
 
-        const res = await fetchWithRetry(`${ESP32_BASE}${path}`)
+        const res = await fetchWithRetry(`${PI_BACKEND}/api/devices/livingroom/led`, { body: { on: path }})
 
         if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
-            
-            setIsOn(next)
+        return
         } catch(err) {
             const message = err?.message ?? 'An unknown error occured'
             setActionError(message)
