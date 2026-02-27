@@ -29,7 +29,7 @@ function getDeviceOr404(id, res) {
 // Status from all devices for frontend
 app.get('/api/devices/:id/status', async (req, res) => {
 	const device = getDeviceOr404(req.params.id, res)
-	console.log(req.params.id, device.baseUrl)
+	console.log('Status: ', req.params.id, device.baseUrl)
 	if (!device) return
 
 	try {
@@ -101,7 +101,7 @@ app.get('/telemetry', (req, res) => {
 })
 
 // ----------------POST Endpoints----------------
-app.post('/api/devices/:id/led', async (req, res) => {
+app.put('/api/devices/:id/led', async (req, res) => {
 	const { id } = req.params
 	const { on } = req.body
 	const device = getDeviceOr404(id, res)
