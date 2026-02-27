@@ -4,7 +4,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { fetchWithRetry } from './utils/fetchWithRetry.js';
 
-// ESM __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -124,6 +123,22 @@ app.get('/telemetry', (req, res) => {
 })
 
 // ----------------POST Endpoints----------------
+app.post('/api/devices/:id/led', async (req, res) => {
+	const device = getDeviceOr404(req.params.id, res)
+	if (!device) return res.status(404).json({ error: `ERROR 404: Device: ${id} not found` })
+
+	try {
+		const upstreamRes = await fetch(`${device.baseUrl}/status`)
+
+		if (!upstreamRes.ok) throw new Error(`HTTP error: ${res.status}`)
+
+		const data = await upstreamRes.json()
+
+		console.log(data)
+	} catch(err) {
+		console.error(`ERROR: ${req.params.id} connection failed: ${err.message}`)
+	}
+})
 
 // Telemetry
 app.post('/telemetry', (req, res) => {
