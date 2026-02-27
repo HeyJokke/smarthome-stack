@@ -19,33 +19,11 @@ const DEVICES = {
 function getDeviceOr404(id, res) {
 	const device = DEVICES[id]
 	if (!device) {
-		res.status(404).json({ error: `ERROR 404: Device: ${id} not found` })
+		res.status(404).json({ error: `Device ${id} not found` })
 		return null
 	}
 	return device
 }
-
-app.all(/^\/esp32(\/.*)?$/, async (req, res) => {
-  try {
-    const ESP_BASE = "http://192.168.0.70";
-
-    const targetPath = req.originalUrl.replace(/^\/esp32/, "") || "/";
-
-    const response = await fetch(`${ESP_BASE}${targetPath}`, {
-      method: req.method,
-      headers: { "content-type": req.headers["content-type"] ?? "application/json" },
-      body: ["GET", "HEAD"].includes(req.method) ? undefined : JSON.stringify(req.body),
-    });
-
-    const contentType = response.headers.get("content-type");
-    if (contentType) res.setHeader("content-type", contentType);
-
-    res.status(response.status).send(await response.text());
-  } catch (err) {
-    console.error("ESP proxy error:", err);
-    res.status(502).json({ error: "ESP32 unreachable" });
-  }
-});
 
 // ----------------GET Endpoints----------------
 // Status from all devices for frontend
@@ -124,19 +102,23 @@ app.get('/telemetry', (req, res) => {
 
 // ----------------POST Endpoints----------------
 app.post('/api/devices/:id/led', async (req, res) => {
-	const device = getDeviceOr404(req.params.id, res)
-	if (!device) return res.status(404).json({ error: `ERROR 404: Device: ${id} not found` })
+	const { id } = req.params
+	const { on } = req.body
+	const device = getDeviceOr404(id, res)
+	if (!device) return
+	if (typeof on !== 'boolean') return res.status(400).json({ ok: false, error: `'on' must be a boolean` })
 
 	try {
-		const upstreamRes = await fetch(`${device.baseUrl}/status`)
+		const path = on ? 'on' : 'off'
+		const url = `${device.baseUrl}/led/${path}`
 
-		if (!upstreamRes.ok) throw new Error(`HTTP error: ${res.status}`)
+		const upstreamLedRes = await fetchWithRetry(url)
+		if (!upstreamLedRes.ok) return res.status(502).json({ ok: false, error: `ESP32 led HTTP ${upstreamLedRes.status}` })
 
-		const data = await upstreamRes.json()
-
-		console.log(data)
+		return res.status(200).json({ok: true, error: null})
 	} catch(err) {
-		console.error(`ERROR: ${req.params.id} connection failed: ${err.message}`)
+		console.error(`ERROR: ${id} connection failed: ${err.message}`)
+		return res.status(502).json({ ok: false, error: 'ESP32 unreachable' })
 	}
 })
 
