@@ -10,6 +10,7 @@ db.serialize(() => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             machine_id TEXT NOT NULL,
             timestamp INTEGER NOT NULL,
+            led INT,
             temperature REAL,
             machine_uptime_ms INT NOT NULL,
             photo_sens INT NOT NULL,

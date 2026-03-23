@@ -19,12 +19,18 @@ const char* machine_id = "esp32-1";
 const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/telemetry";
 int tempStatus;
 int photosens;
+int led;
 
 void handleRoot() {
   server.send(200, "text/plain", "Hello from ESP32!");
 }
 
 // LED handlers
+int readLed() {
+  int raw = digitalRead(LED);
+  return raw;
+}
+
 void handleLedOff() {
   digitalWrite(LED, LOW);
   strncpy(ledStatus, "OFF", sizeof(ledStatus));
@@ -112,6 +118,7 @@ void postTest() {
 
   const float temperature = readTemp();
   const int photo_sens = readPhotosens();
+  const int led = readLed();
   uptime_ms = millis();
 
   HTTPClient http;
@@ -126,12 +133,14 @@ void postTest() {
   String jsonMachineId = "\"machine_id\":\"" + String(machine_id) + "\"";
   String jsonTemp = "\"temperature\":" + String(temperature, 2);
   String jsonPhotoSens = "\"photo_sens\":" + String(photo_sens);
+  String jsonLed = "\"led\":" + String(led);
   String jsonUptimeMs = "\"uptime_ms\":" + String(uptime_ms);
 
   String body = "{";
   body += jsonMachineId + ",";
   body += jsonTemp + ",";
   body += jsonPhotoSens + ",";
+  body += jsonLed + ",";
   body += jsonUptimeMs;
   body += "}";
 
