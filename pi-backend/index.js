@@ -122,6 +122,11 @@ app.put('/api/devices/:id/led', async (req, res) => {
 	}
 })
 
+app.post('/api/devices/:id/state', (req, res) => {
+	console.log(req.query)
+	console.log(req)
+})
+
 // Telemetry
 app.post('/telemetry', (req, res) => {
 	const {machine_id, temperature, photo_sens, uptime_ms} = req.body

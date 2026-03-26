@@ -15,6 +15,13 @@ db.serialize(() => {
             payload TEXT
         )`
     )
+
+    db.run(
+        `CREATE TABLE IF NOT EXISTS devices (
+            id TEXT PRIMARY KEY,
+            led INT
+        )`
+    )
 })
 
 export default db

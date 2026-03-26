@@ -17,6 +17,7 @@ unsigned long lastPostMs = 0;
 char ledStatus[8] = "";
 const char* machine_id = "esp32-1";
 const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/telemetry";
+String PI_LEDSTATE_URL = "http://192.168.0.63:3000/api/devices/" + String(machine_id) + "/state";
 int tempStatus;
 int photosens;
 int led;
@@ -31,16 +32,59 @@ int readLed() {
   return raw;
 }
 
+void postLed() {
+  // check wifi status before starting
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.print("postLed: No internet connection yet.");
+    return;
+  }
+
+  // read and save state from readLed()
+  const int ledStatus = readLed();
+
+  // begin http - hit the endpoint in the pi http://192.168.0.63:3000/api/devices/:id/state
+  HTTPClient http;
+
+  http.setTimeout(8000);
+  http.setReuse(false);
+
+  http.begin(client, PI_LEDSTATE_URL);
+  // set headers
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("Connection", "close");
+  // set json header
+  String body = "{\"LED\": ";
+  body += String(ledStatus);
+  body += "}";
+  http.addHeader("Content-Length", String(body.length()));
+
+  int code = http.POST(String(body));
+
+  // handle errors
+  if (code > 0) {
+    String response = http.getString();
+    Serial.print("postLed: Response = ");
+    Serial.println(response);
+  } else {
+    Serial.print("postLed: Error = ");
+    Serial.println(http.errorToString(code));
+  }
+  // end http
+  http.end();
+}
+
 void handleLedOff() {
   digitalWrite(LED, LOW);
   strncpy(ledStatus, "OFF", sizeof(ledStatus));
   server.send(200, "application/json", "{\"LED\": \"OFF\"}");
+  postLed();
 }
 
 void handleLedOn() {
   digitalWrite(LED, HIGH);
   strncpy(ledStatus, "ON", sizeof(ledStatus));
   server.send(200, "application/json", "{\"LED\": \"ON\"}");
+  postLed();
 }
 
 void handleLedBlink() {
