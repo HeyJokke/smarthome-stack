@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express()
 app.use(express.json())
-
+console.log("server started")
 const DEVICES = {
 	livingroom: { baseUrl: "http://192.168.0.70" },
 	kitchen: { baseUrl: "http://192.168.0.71" },
@@ -102,6 +102,7 @@ app.get('/telemetry', (req, res) => {
 
 // ----------------POST Endpoints----------------
 app.put('/api/devices/:id/led', async (req, res) => {
+	console.log("Test")
 	const { id } = req.params
 	const { on } = req.body
 	const device = getDeviceOr404(id, res)
@@ -114,7 +115,7 @@ app.put('/api/devices/:id/led', async (req, res) => {
 
 		const upstreamLedRes = await fetchWithRetry(url)
 		if (!upstreamLedRes.ok) return res.status(502).json({ ok: false, error: `ESP32 led HTTP ${upstreamLedRes.status}` })
-		console.log("Test")
+		
 		return res.status(200).json({ok: true, error: null})
 	} catch(err) {
 		console.error(`ERROR: ${id} connection failed: ${err.message}`)
