@@ -122,9 +122,11 @@ app.put('/api/devices/:id/led', async (req, res) => {
 	}
 })
 
-app.post('/api/devices/:id/state', (req, res) => {
+app.patch('/api/devices/:id/state', (req, res) => {
 	console.log(req.query)
 	console.log(req)
+
+	res.status(200).json({ok: true})
 })
 
 // Telemetry
