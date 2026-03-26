@@ -58,7 +58,7 @@ void postLed() {
   body += "}";
   http.addHeader("Content-Length", String(body.length()));
 
-  int code = http.POST(String(body));
+  int code = http.PATCH(String(body));
 
   // handle errors
   if (code > 0) {

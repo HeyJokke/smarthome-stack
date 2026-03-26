@@ -114,7 +114,7 @@ app.put('/api/devices/:id/led', async (req, res) => {
 
 		const upstreamLedRes = await fetchWithRetry(url)
 		if (!upstreamLedRes.ok) return res.status(502).json({ ok: false, error: `ESP32 led HTTP ${upstreamLedRes.status}` })
-
+		console.log("Test")
 		return res.status(200).json({ok: true, error: null})
 	} catch(err) {
 		console.error(`ERROR: ${id} connection failed: ${err.message}`)
