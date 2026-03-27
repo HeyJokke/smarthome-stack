@@ -154,7 +154,7 @@ void handleStatus() {
 }
 
 // HTTP Client
-void postTest() {
+void postTelemetry() {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("postTest: No internet connection yet.");
     return;
@@ -254,7 +254,7 @@ void setup() {
   Serial.print("\nHTTP server started on ");
   Serial.println(WiFi.localIP());
 
-  postTest();
+  postTelemetry();
 }
 
 void loop() {
@@ -265,7 +265,7 @@ void loop() {
   // Non-blocking loop for POST status
   if (now - lastPostMs >= 30000) {
     lastPostMs = now;
-    postTest();
+    postTelemetry();
   }
 
   delay(10);

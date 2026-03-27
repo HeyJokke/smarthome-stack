@@ -3,17 +3,31 @@ import db from './db.js'
 import path from "path";
 import { fileURLToPath } from "url";
 import { fetchWithRetry } from './utils/fetchWithRetry.js';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express()
 app.use(express.json())
-console.log("server started")
+
+const server = createServer(app)
+const wss = new WebSocketServer({ server })
+const clients = new Set()
+
+wss.on('connection', (ws) => {
+	clients.add(ws)
+	console.log('Added connection')
+
+	ws.on('close', () => {
+		clients.delete(ws)
+		console.log('Removed connection')
+	})
+})
+
 const DEVICES = {
-	livingroom: { baseUrl: "http://192.168.0.70" },
-	kitchen: { baseUrl: "http://192.168.0.71" },
-	office: { baseUrl: "http://192.168.0.72" }
+	livingroom: { baseUrl: "http://192.168.0.70" }
 }
 
 function getDeviceOr404(id, res) {
@@ -102,7 +116,6 @@ app.get('/telemetry', (req, res) => {
 
 // ----------------POST Endpoints----------------
 app.put('/api/devices/:id/led', async (req, res) => {
-	console.log("Test")
 	const { id } = req.params
 	const { on } = req.body
 	const device = getDeviceOr404(id, res)
@@ -123,21 +136,59 @@ app.put('/api/devices/:id/led', async (req, res) => {
 	}
 })
 
-app.patch('/api/devices/:id/state', (req, res) => {
-	console.log(req.query)
-	console.log(req)
+app.patch('/api/devices/:id/state', async (req, res) => {
+	const { id } = req.params
+	const { LED } = req.body
+	
+	db.get(
+		`SELECT * FROM devices WHERE id = ?`,
+		[id],
+		function (err, row) {
+			try {
+				if (err) {
+					throw new Error(err)
+				}
 
-	res.status(200).json({ok: true})
+				if (row) {
+					// ROW RETURNED
+
+					const ledState = LED === undefined || LED === null ? null : Number(LED)
+					if (ledState === null || !Number.isFinite(ledState)) {
+						return res.status(400).json({ ok: false, device: null, error: 'ERROR: LED state is null or not a number' })
+					}
+
+					db.run('UPDATE devices SET led = ? WHERE id = ?', [ledState, id])
+					
+					for (const client of clients) {
+						const obj = {
+							id,
+							led: ledState
+						}
+						const payload = JSON.stringify(obj)
+
+						if (client.readyState === 1) {
+							client.send(payload)
+						}
+					}
+
+					return res.status(201).json({ ok: true, device: {...row, led: LED}, error: null })
+				} else {
+					// NO SUCH DEVICES FOUND
+					return res.status(500).json({ ok: false, device: null, error: 'ERROR: No matches to device id' })
+				}
+			} catch(err) {
+				// SQLITE ERROR
+				return res.status(500).json({ ok: false, device: null, error: err.message })
+			}
+		}
+	)
 })
 
 // Telemetry
 app.post('/telemetry', (req, res) => {
-	const {machine_id, temperature, photo_sens, uptime_ms} = req.body
+	const {machine_id, temperature, photo_sens, led, uptime_ms} = req.body
 	const timestamp_iso = new Date().toISOString()
 	const timestamp_ms = Date.now()
-
-	console.log("POST /telemetry content-type:", req.headers["content-type"])
-	console.log("POST /telemetry raw body:", req.body)
 	
 	// Check for not null constraints and types
 	const machineId = typeof machine_id === 'string' ? machine_id.trim() : ''
@@ -164,37 +215,50 @@ app.post('/telemetry', (req, res) => {
 		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Photosensitivity is either NULL or not a number' })
 	}
 
+	const ledState = led === undefined || led === null ? null : Number(led)
+	if ((ledState === null) || !Number.isFinite(led)) {
+		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: LED state is either NULL or not a number' })
+	}
+
 	const canonicalPayload = {
 		machine_id: machineId, // device ID of which the payload came from
 		timestamp: timestamp_ms, // server event time
 		timestamp_iso, // human readable event time from server
 		machine_uptime_ms: uptimeMs, // uptime in ms of device
 		photo_sens: photoSens, // photo sensitivity sensor value from device
+		led: ledState, // led state value
 		temperature: temp // temperature sensor value from device
 	}
 
 	// Include modified or extra values in payload
 	const payload = JSON.stringify(canonicalPayload)
 	
-	db.run(
-		'INSERT INTO telemetry(machine_id, timestamp, temperature, machine_uptime_ms, photo_sens, payload) VALUES (?, ?, ?, ?, ?, ?)',
-		[machineId, timestamp_ms, temp, uptimeMs, photoSens, payload ?? null],
-		function (err) {
-			if (err) return res.status(500).json({ ok: false, payload: null ,error: err.message })
+	db.serialize( () => {
+		db.run(
+			'INSERT OR IGNORE INTO devices(id, led) VALUES (?, ?)',
+			[machineId, ledState]
+		)
 
-			return res.status(201).json({ ok: true, 
-				payload: {
-					id: this.lastID,
-					...canonicalPayload
-				}, error: null })
-		}
-	)
+		db.run(
+			'INSERT INTO telemetry(machine_id, timestamp, led, temperature, machine_uptime_ms, photo_sens, payload) VALUES (?, ?, ?, ?, ?, ?, ?)',
+			[machineId, timestamp_ms, ledState, temp, uptimeMs, photoSens, payload ?? null],
+			function (err) {
+				if (err) return res.status(500).json({ ok: false, payload: null ,error: err.message })
+	
+				return res.status(201).json({ ok: true, 
+					payload: {
+						id: this.lastID,
+						...canonicalPayload
+					}, error: null })
+			}
+		)
+	})
 })
 
 // Serve dashboard build
 const distPath = path.join(__dirname, "../dashboard/dist");
 app.use(express.static(distPath));
 
-app.listen(3000, () => {
+server.listen(3000, () => {
 	console.log('Server running on http://192.168.0.63:3000')
 })

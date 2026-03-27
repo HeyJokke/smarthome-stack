@@ -55,6 +55,19 @@ export function useEsp32Led() {
       }, [API_BASE])
 
     React.useEffect(() => {
+        const ws = new WebSocket('ws://localhost:3000')
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data)
+            
+            if (msg.led === 1) setIsOn(true)
+            else setIsOn(false)
+        }
+
+        return () => ws.close()
+    },[])
+    
+    React.useEffect(() => {
         getLedStatus()
     }, [getLedStatus])
 

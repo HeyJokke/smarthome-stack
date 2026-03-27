@@ -19,7 +19,8 @@ db.serialize(() => {
     db.run(
         `CREATE TABLE IF NOT EXISTS devices (
             id TEXT PRIMARY KEY,
-            led INT
+            led INT,
+            UNIQUE(id)
         )`
     )
 })

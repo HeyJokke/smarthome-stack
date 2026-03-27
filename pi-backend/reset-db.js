@@ -6,6 +6,10 @@ db.serialize(() => {
     )
 
     db.run(
+        "DROP TABLE IF EXISTS devices"
+    )
+
+    db.run(
         `CREATE TABLE IF NOT EXISTS telemetry (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             machine_id TEXT NOT NULL,
@@ -15,6 +19,14 @@ db.serialize(() => {
             machine_uptime_ms INT NOT NULL,
             photo_sens INT NOT NULL,
             payload TEXT
+        )`
+    )
+
+    db.run(
+        `CREATE TABLE IF NOT EXISTS devices (
+            id TEXT PRIMARY KEY,
+            led INT,
+            UNIQUE(id)
         )`
     )
 })
