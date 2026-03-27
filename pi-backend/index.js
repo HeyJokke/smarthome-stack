@@ -18,11 +18,11 @@ const clients = new Set()
 
 wss.on('connection', (ws) => {
 	clients.add(ws)
-	console.log(ws.socket.remoteAddress,' connected')
+	console.log(ws._socket.remoteAddress,' connected')
 
 	ws.on('close', () => {
 		clients.delete(ws)
-		console.log(ws.socket.remoteAddress,' disconnected')
+		console.log(ws._socket.remoteAddress,' disconnected')
 	})
 })
 
