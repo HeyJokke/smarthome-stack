@@ -18,11 +18,11 @@ const clients = new Set()
 
 wss.on('connection', (ws) => {
 	clients.add(ws)
-	console.log('Added connection')
+	console.log(ws.socket.remoteAddress,' connected')
 
 	ws.on('close', () => {
 		clients.delete(ws)
-		console.log('Removed connection')
+		console.log(ws.socket.remoteAddress,' disconnected')
 	})
 })
 
@@ -158,7 +158,7 @@ app.patch('/api/devices/:id/state', async (req, res) => {
 					}
 
 					db.run('UPDATE devices SET led = ? WHERE id = ?', [ledState, id])
-					
+
 					for (const client of clients) {
 						const obj = {
 							id,
