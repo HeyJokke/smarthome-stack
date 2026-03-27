@@ -55,7 +55,7 @@ export function useEsp32Led() {
       }, [API_BASE])
 
     React.useEffect(() => {
-        const ws = new WebSocket('ws://localhost:3000')
+        const ws = new WebSocket('ws://192.168.0.63:3000')
 
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data)
