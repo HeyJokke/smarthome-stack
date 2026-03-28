@@ -16,8 +16,8 @@ unsigned long uptime_ms;
 unsigned long lastPostMs = 0;
 char ledStatus[8] = "";
 const char* machine_id = "esp32-1";
-const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/telemetry";
-String PI_LEDSTATE_URL = "http://192.168.0.63:3000/api/devices/" + String(machine_id) + "/state";
+const char* PI_TELEMETRY_URL = "http://192.168.0.53:3000/telemetry";
+String PI_LEDSTATE_URL = "http://192.168.0.53:3000/api/devices/" + String(machine_id) + "/state";
 int tempStatus;
 int photosens;
 int led;
@@ -53,12 +53,14 @@ void postLed() {
   http.addHeader("Content-Type", "application/json");
   http.addHeader("Connection", "close");
   // set json header
-  String body = "{\"LED\": ";
-  body += String(ledStatus);
-  body += "}";
-  http.addHeader("Content-Length", String(body.length()));
+  String jsonDeviceLed = "\"LED\": " + String(ledStatus);
+  String jsonDeviceState = "{";
+  jsonDeviceState += jsonDeviceLed;
+  jsonDeviceState += "}";
 
-  int code = http.PATCH(String(body));
+  http.addHeader("Content-Length", String(jsonDeviceState.length()));
+
+  int code = http.PATCH(String(jsonDeviceState));
 
   // handle errors
   if (code > 0) {
@@ -134,12 +136,12 @@ void handlePhotosensitive() {
 }
 
 void handleStatus() {
-  tempStatus = readTemp() * 100;
-  photosens = readPhotosens();
+  const float temperature = readTemp();
+  const float photosens = readPhotosens();
   uptime_ms = millis();
 
   String jsonLedStatus = "\"LED\": \"" + String(ledStatus) + "\"";
-  String jsonTempStatus = "\"Temperature\": " + String(tempStatus);
+  String jsonTempStatus = "\"Temperature\": " + String(temperature, 2);
   String jsonPhotosens = "\"Photosensitivity\": " + String(photosens);
   String jsonUptimeStatus = "\"Uptime\": " + String(uptime_ms);
 
@@ -153,7 +155,6 @@ void handleStatus() {
   server.send(200, "application/json", jsonDeviceStatus);
 }
 
-// HTTP Client
 void postTelemetry() {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("postTest: No internet connection yet.");

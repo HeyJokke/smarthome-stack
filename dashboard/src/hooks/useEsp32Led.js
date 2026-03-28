@@ -55,12 +55,14 @@ export function useEsp32Led() {
       }, [API_BASE])
 
     React.useEffect(() => {
-        const ws = new WebSocket('ws://192.168.0.63:3000')
+        const ws = new WebSocket('ws://192.168.0.53:3000')
 
         ws.onmessage = (event) => {
-            const msg = JSON.parse(event.data)
+            const {led, temp} = JSON.parse(event.data)
             
-            if (msg.led === 1) setIsOn(true)
+            setTemp(temp)
+
+            if (led === 1) setIsOn(true)
             else setIsOn(false)
         }
 
@@ -70,16 +72,6 @@ export function useEsp32Led() {
     React.useEffect(() => {
         getLedStatus()
     }, [getLedStatus])
-
-    React.useEffect(() => {
-        const id = setInterval(() => {
-        if (!isBusy) {
-            getLedStatus()
-        } 
-        }, 5000)
-
-        return () => clearInterval(id)
-    },[isBusy, getLedStatus])
 
     return {
         temp,

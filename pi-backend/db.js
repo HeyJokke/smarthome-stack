@@ -8,6 +8,7 @@ db.serialize(() => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             machine_id TEXT NOT NULL,
             timestamp INTEGER NOT NULL,
+            timestamp_hhmmss TEXT NOT NULL,
             led INT,
             temperature REAL,
             machine_uptime_ms INT NOT NULL,
@@ -20,6 +21,7 @@ db.serialize(() => {
         `CREATE TABLE IF NOT EXISTS devices (
             id TEXT PRIMARY KEY,
             led INT,
+            temp INT,
             UNIQUE(id)
         )`
     )

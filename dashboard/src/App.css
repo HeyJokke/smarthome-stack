@@ -17,6 +17,28 @@ p {
   color: white;
 }
 
+.nav-btn {
+  height: 64px;
+  width: 64px;
+  background-color: #111111;
+  border: 0;
+  border-radius: 10px;
+  color: white;
+}
+
+.nav-btn-logo {
+  height: 32px;
+  width: 32px;
+}
+
+.navigation-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
 .smarthome-grid-div {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -28,6 +50,12 @@ p {
 .smartcard-wrapper {
   display: inline-block;
   position: relative;
+}
+
+.smartgraph-wrapper {
+  display: flex;
+  flex-direction: column;
+  grid-row: span 2;
 }
 
 .smartcard-overlay {

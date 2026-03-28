@@ -158,11 +158,12 @@ app.patch('/api/devices/:id/state', async (req, res) => {
 					}
 
 					db.run('UPDATE devices SET led = ? WHERE id = ?', [ledState, id])
-
+					
 					for (const client of clients) {
 						const obj = {
 							id,
-							led: ledState
+							led: ledState,
+							temp: row.temp
 						}
 						const payload = JSON.stringify(obj)
 
@@ -185,7 +186,7 @@ app.patch('/api/devices/:id/state', async (req, res) => {
 })
 
 // Telemetry
-app.post('/telemetry', (req, res) => {
+app.post('/telemetry', async (req, res) => {
 	const {machine_id, temperature, photo_sens, led, uptime_ms} = req.body
 	const timestamp_iso = new Date().toISOString()
 	const timestamp_ms = Date.now()
@@ -234,14 +235,45 @@ app.post('/telemetry', (req, res) => {
 	const payload = JSON.stringify(canonicalPayload)
 	
 	db.serialize( () => {
+
 		db.run(
-			'INSERT OR IGNORE INTO devices(id, led) VALUES (?, ?)',
-			[machineId, ledState]
+			'INSERT OR IGNORE INTO devices(id, led, temp) VALUES (?, ?, ?)',
+			[machineId, led, temp]
 		)
 
 		db.run(
-			'INSERT INTO telemetry(machine_id, timestamp, led, temperature, machine_uptime_ms, photo_sens, payload) VALUES (?, ?, ?, ?, ?, ?, ?)',
-			[machineId, timestamp_ms, ledState, temp, uptimeMs, photoSens, payload ?? null],
+			'UPDATE devices SET temp = ? WHERE id = ?',
+			[temp, machineId]
+		)
+
+		db.get(
+			'SELECT * FROM devices WHERE id = ?',
+			[machineId],
+			function (err, row) {
+				if (err) {
+					console.error('SELECT devices failed: ', err.message)
+					return
+				}
+
+				// Send temp update to all clients connected
+				for (const client of clients) {
+					const obj = {
+						id,
+						led: row.led,
+						temp: row.temp
+					}
+					const payload = JSON.stringify(obj)
+
+					if (client.readyState === 1) {
+						client.send(payload)
+					}
+				}
+			}
+		)
+
+		db.run(
+			'INSERT INTO telemetry(machine_id, timestamp, timestamp_hhmmss, led, temperature, machine_uptime_ms, photo_sens, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+			[machineId, timestamp_ms, timestamp_iso.slice(11,-8), ledState, temp, uptimeMs, photoSens, payload ?? null],
 			function (err) {
 				if (err) return res.status(500).json({ ok: false, payload: null ,error: err.message })
 	
@@ -253,6 +285,7 @@ app.post('/telemetry', (req, res) => {
 			}
 		)
 	})
+
 })
 
 // Serve dashboard build
