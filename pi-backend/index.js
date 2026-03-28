@@ -258,7 +258,7 @@ app.post('/telemetry', async (req, res) => {
 				// Send temp update to all clients connected
 				for (const client of clients) {
 					const obj = {
-						id,
+						machineId,
 						led: row.led,
 						temp: row.temp
 					}
