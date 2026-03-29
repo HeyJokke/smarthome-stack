@@ -1,7 +1,6 @@
 import {
   Lightbulb, WifiOff, CircleQuestionMark
 } from "lucide-react";
-import SmartGraph from "./smartGraph";
 
 const iconsObj = {
   'led': Lightbulb,

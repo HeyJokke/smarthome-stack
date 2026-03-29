@@ -5,7 +5,7 @@ import SmartGraph from './components/smartGraph';
 import Navigation from './components/Navigation';
 
 function App() {
-  const livingRoom = useEsp32Led()
+  const livingRoom = useEsp32Led({device: 'livingroom'})
 
   return (
     <>

@@ -1,12 +1,15 @@
 import React from 'react'
 import { fetchWithRetry } from './fetchWithRetry';
 
-export function useEsp32Led() {
+export function useEsp32Led({ device }) {
     const [isOn, setIsOn] = React.useState(false)
     const [isBusy, setIsBusy] = React.useState(false)
     const [actionError, setActionError] = React.useState(null)
     const [statusError, setStatusError] = React.useState(null)
     const [temp, setTemp] = React.useState(0)
+
+    // Configuration
+    const backend_ip = '192.168.0.63:3000'
     
     // Device configurations
     const API_BASE = import.meta.env.VITE_API_BASE ?? ""
@@ -18,7 +21,7 @@ export function useEsp32Led() {
             setIsBusy(true)
             setActionError(null)
 
-            const res = await fetchWithRetry(`${API_BASE}/api/devices/livingroom/led`, { method: 'PUT', body: { on: path }})
+            const res = await fetchWithRetry(`${API_BASE}/api/devices/${device}/led`, { method: 'PUT', body: { on: path }})
 
             if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
             setIsOn(path)
@@ -34,7 +37,7 @@ export function useEsp32Led() {
 
     const getLedStatus = React.useCallback( async () => {
           try {
-            const res = await fetchWithRetry(`${API_BASE}/api/devices/livingroom/status`, { retries: 2 })
+            const res = await fetchWithRetry(`${API_BASE}/api/devices/${device}/status`, { retries: 2 })
             if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
 
             const data = await res.json()
@@ -52,10 +55,10 @@ export function useEsp32Led() {
             setStatusError(message)
             console.error('[LED] Status failed: ', err)
           }
-      }, [API_BASE])
+      }, [API_BASE, device])
 
     React.useEffect(() => {
-        const ws = new WebSocket('ws://192.168.0.53:3000')
+        const ws = new WebSocket('ws://' + backend_ip)
 
         ws.onmessage = (event) => {
             const {led, temp} = JSON.parse(event.data)
