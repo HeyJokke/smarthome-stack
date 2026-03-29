@@ -3,32 +3,7 @@
 import React from 'react'
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from 'recharts'
 
-export default function AreaChartComponent() {
-    const [telemetryData, setTelemetryData] = React.useState([])
-
-    // Device configurations
-    const API_BASE_HTTP = import.meta.env.VITE_API_BASE ? ('http://' + import.meta.env.VITE_API_BASE) : ""
-
-    React.useEffect( () => {
-        async function fetchTelemetryData() {
-            try {
-                const res = await fetch(`${API_BASE_HTTP}/telemetry?limit=10`)
-
-                if (!res.ok) {
-                    throw new Error('fetchTelemetryData: ERROR FAILED TO FETCH')
-                } 
-
-                const data = await res.json()
-
-                setTelemetryData(data.payload.reverse())
-            } catch(err) {
-                console.error(err.message)
-            }
-        }
-
-        fetchTelemetryData()
-    },[]) 
-    
+export default function AreaChartComponent({telemetryData}) {
     return (
         <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={telemetryData} margin={{ left: -35, right: 5, bottom: 0, top: 15 }}>

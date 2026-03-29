@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { fetchWithRetry } from './utils/fetchWithRetry.js';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
+import { machine } from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -258,7 +259,7 @@ app.post('/telemetry', async (req, res) => {
 				// Send temp update to all clients connected
 				for (const client of clients) {
 					const obj = {
-						machineId,
+						id: machineId,
 						led: row.led,
 						temp: row.temp
 					}

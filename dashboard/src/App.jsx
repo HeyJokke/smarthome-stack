@@ -13,7 +13,7 @@ function App() {
       <div className='smarthome-grid-div'>
         <Navigation />
 
-        <SmartGraph/>
+        <SmartGraph telemetryData={livingRoom.telemetryData}/>
 
         <SmartCard
           title={'Living Room'}

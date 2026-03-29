@@ -1,10 +1,10 @@
 import AreaChartComponent from './AreaChart'
 
-export default function SmartGraph() {
+export default function SmartGraph({telemetryData}) {
     return (
         <>  
             <div className='smartgraph-wrapper'>
-                <AreaChartComponent />
+                <AreaChartComponent telemetryData={telemetryData} />
             </div>
         </>
     )

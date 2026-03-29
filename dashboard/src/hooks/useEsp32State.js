@@ -7,10 +7,11 @@ export function useEsp32Led({ device }) {
     const [actionError, setActionError] = React.useState(null)
     const [statusError, setStatusError] = React.useState(null)
     const [temp, setTemp] = React.useState(0)
+    const [telemetryData, setTelemetryData] = React.useState([])
 
-    // Device configurations
-    const API_BASE_HTTP = import.meta.env.VITE_API_BASE ? ('http://' + import.meta.env.VITE_API_BASE) : ""
-    const API_BASE = import.meta.env.VITE_API_BASE ?? "192.168.0.63:3000"
+    // Configurations
+    const API_BASE = import.meta.env.VITE_API_BASE ?? ""
+    const LOCAL_IP = import.meta.env.VITE_LOCAL_IP ?? "192.168.0.63:3000"
 
     async function toggleLed() {
         const path = !isOn
@@ -19,7 +20,7 @@ export function useEsp32Led({ device }) {
             setIsBusy(true)
             setActionError(null)
 
-            const res = await fetchWithRetry(`${API_BASE_HTTP}/api/devices/${device}/led`, { method: 'PUT', body: { on: path }})
+            const res = await fetchWithRetry(`${API_BASE}/api/devices/${device}/led`, { method: 'PUT', body: { on: path }})
 
             if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
             setIsOn(path)
@@ -35,7 +36,7 @@ export function useEsp32Led({ device }) {
 
     const getLedStatus = React.useCallback( async () => {
           try {
-            const res = await fetchWithRetry(`${API_BASE_HTTP}/api/devices/${device}/status`, { retries: 2 })
+            const res = await fetchWithRetry(`${API_BASE}/api/devices/${device}/status`, { retries: 2 })
             if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
 
             const data = await res.json()
@@ -53,10 +54,26 @@ export function useEsp32Led({ device }) {
             setStatusError(message)
             console.error('[LED] Status failed: ', err)
           }
-      }, [API_BASE_HTTP, device])
+      }, [])
+
+      const getTelemetryData = React.useCallback( async () => {
+        try {
+            const res = await fetch(`${API_BASE}/telemetry?limit=10`)
+
+            if (!res.ok) {
+                throw new Error('fetchTelemetryData: ERROR FAILED TO FETCH')
+            } 
+
+            const data = await res.json()
+
+            setTelemetryData(data.payload.reverse())
+        } catch(err) {
+            console.error(err.message)
+        }
+      }, [])
 
     React.useEffect(() => {
-        const ws = new WebSocket('ws://' + API_BASE)
+        const ws = new WebSocket('ws://' + LOCAL_IP)
 
         ws.onmessage = (event) => {
             const {led, temp} = JSON.parse(event.data)
@@ -65,6 +82,8 @@ export function useEsp32Led({ device }) {
 
             if (led === 1) setIsOn(true)
             else setIsOn(false)
+
+            getTelemetryData()
         }
 
         return () => ws.close()
@@ -72,7 +91,8 @@ export function useEsp32Led({ device }) {
     
     React.useEffect(() => {
         getLedStatus()
-    }, [getLedStatus])
+        getTelemetryData()
+    }, [getLedStatus, getTelemetryData])
 
     return {
         temp,
@@ -80,6 +100,7 @@ export function useEsp32Led({ device }) {
         isBusy,
         actionError,
         statusError,
-        toggleLed
+        toggleLed,
+        telemetryData
     }
 }
