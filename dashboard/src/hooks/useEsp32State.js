@@ -1,7 +1,7 @@
 import React from 'react'
 import { fetchWithRetry } from './fetchWithRetry';
 
-export function useEsp32Led({ device }) {
+export function useEsp32State({ device }) {
     const [isOn, setIsOn] = React.useState(false)
     const [isBusy, setIsBusy] = React.useState(false)
     const [actionError, setActionError] = React.useState(null)
