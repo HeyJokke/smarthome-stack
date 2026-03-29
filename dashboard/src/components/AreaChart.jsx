@@ -9,7 +9,7 @@ export default function AreaChartComponent() {
     React.useEffect( () => {
         async function fetchTelemetryData() {
             try {
-                const res = await fetch('http://localhost:3000/telemetry?limit=10')
+                const res = await fetch('http://192.168.0.63:3000/telemetry?limit=10')
 
                 if (!res.ok) {
                     throw new Error('fetchTelemetryData: ERROR FAILED TO FETCH')
