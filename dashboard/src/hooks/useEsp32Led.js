@@ -9,7 +9,8 @@ export function useEsp32Led({ device }) {
     const [temp, setTemp] = React.useState(0)
 
     // Device configurations
-    const API_BASE = import.meta.env.VITE_API_BASE ?? ""
+    const API_BASE_HTTP = import.meta.env.VITE_API_BASE ? ('http://' + import.meta.env.VITE_API_BASE) : ""
+    const API_BASE = import.meta.env.VITE_API_BASE ?? "192.168.0.63:3000"
 
     async function toggleLed() {
         const path = !isOn
@@ -18,7 +19,7 @@ export function useEsp32Led({ device }) {
             setIsBusy(true)
             setActionError(null)
 
-            const res = await fetchWithRetry(`${API_BASE}/api/devices/${device}/led`, { method: 'PUT', body: { on: path }})
+            const res = await fetchWithRetry(`${API_BASE_HTTP}/api/devices/${device}/led`, { method: 'PUT', body: { on: path }})
 
             if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
             setIsOn(path)
@@ -34,7 +35,7 @@ export function useEsp32Led({ device }) {
 
     const getLedStatus = React.useCallback( async () => {
           try {
-            const res = await fetchWithRetry(`${API_BASE}/api/devices/${device}/status`, { retries: 2 })
+            const res = await fetchWithRetry(`${API_BASE_HTTP}/api/devices/${device}/status`, { retries: 2 })
             if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
 
             const data = await res.json()
@@ -52,10 +53,10 @@ export function useEsp32Led({ device }) {
             setStatusError(message)
             console.error('[LED] Status failed: ', err)
           }
-      }, [API_BASE, device])
+      }, [API_BASE_HTTP, device])
 
     React.useEffect(() => {
-        const ws = new WebSocket('ws://localhost:3000')
+        const ws = new WebSocket('ws://' + API_BASE)
 
         ws.onmessage = (event) => {
             const {led, temp} = JSON.parse(event.data)

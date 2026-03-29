@@ -7,12 +7,12 @@ export default function AreaChartComponent() {
     const [telemetryData, setTelemetryData] = React.useState([])
 
     // Device configurations
-    const API_BASE = import.meta.env.VITE_API_BASE ?? ""
+    const API_BASE_HTTP = import.meta.env.VITE_API_BASE ? ('http://' + import.meta.env.VITE_API_BASE) : ""
 
     React.useEffect( () => {
         async function fetchTelemetryData() {
             try {
-                const res = await fetch(`${API_BASE}/telemetry?limit=10`)
+                const res = await fetch(`${API_BASE_HTTP}/telemetry?limit=10`)
 
                 if (!res.ok) {
                     throw new Error('fetchTelemetryData: ERROR FAILED TO FETCH')
