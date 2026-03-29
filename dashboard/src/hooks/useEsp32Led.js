@@ -8,9 +8,6 @@ export function useEsp32Led({ device }) {
     const [statusError, setStatusError] = React.useState(null)
     const [temp, setTemp] = React.useState(0)
 
-    // Configuration
-    const backend_ip = '192.168.0.63:3000'
-    
     // Device configurations
     const API_BASE = import.meta.env.VITE_API_BASE ?? ""
 
@@ -58,7 +55,7 @@ export function useEsp32Led({ device }) {
       }, [API_BASE, device])
 
     React.useEffect(() => {
-        const ws = new WebSocket('ws://' + backend_ip)
+        const ws = new WebSocket('ws://localhost:3000')
 
         ws.onmessage = (event) => {
             const {led, temp} = JSON.parse(event.data)
