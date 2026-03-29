@@ -1,11 +1,11 @@
 import './App.css'
-import { useEsp32Led } from './hooks/useEsp32Led'
+import { useEsp32State } from './hooks/useEsp32State'
 import SmartCard from './components/smartCard';
 import SmartGraph from './components/smartGraph';
 import Navigation from './components/Navigation';
 
 function App() {
-  const livingRoom = useEsp32Led({device: 'livingroom'})
+  const livingRoom = useEsp32State({device: 'livingroom'})
 
   return (
     <>
