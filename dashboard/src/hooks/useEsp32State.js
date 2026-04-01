@@ -73,6 +73,9 @@ export function useEsp32State({ device }) {
       }, [])
 
     React.useEffect(() => {
+        getLedStatus()
+        getTelemetryData()
+        
         const ws = new WebSocket('ws://' + LOCAL_IP)
 
         ws.onmessage = (event) => {
@@ -88,11 +91,6 @@ export function useEsp32State({ device }) {
 
         return () => ws.close()
     },[])
-    
-    React.useEffect(() => {
-        getLedStatus()
-        getTelemetryData()
-    }, [getLedStatus, getTelemetryData])
 
     return {
         temp,
