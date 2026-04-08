@@ -5,7 +5,14 @@ export async function fetchWithRetry(url, { retries = 2, baseDelayMs = 200, meth
       try {
         const isBodyDefined = body !== undefined && body !== null
         const parsedBody = isBodyDefined ? JSON.stringify(body) : undefined
-        const res = await fetch(url, { signal: AbortSignal.timeout(2500), headers: {"Content-Type": "application/json"}, method, body: parsedBody })
+        const res = await fetch(url, 
+          { 
+            signal: AbortSignal.timeout(2500), 
+            headers: {"Content-Type": "application/json"}, 
+            method, 
+            body: parsedBody 
+          }
+        )
 
         // Success
         if (res.ok) return res

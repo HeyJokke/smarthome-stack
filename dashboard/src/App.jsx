@@ -9,7 +9,6 @@ function App() {
 
   return (
     <>
-      <h1>SmartHome</h1>
       <div className='smarthome-grid-div'>
         <Navigation />
 

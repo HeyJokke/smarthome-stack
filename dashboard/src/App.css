@@ -1,5 +1,9 @@
 html {
   background-color: #181A1B;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
 }
 
 #root {
@@ -36,26 +40,46 @@ p {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 15px;
+  gap: 15px
 }
 
 .smarthome-grid-div {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-  grid-column-gap: 8px;
-  grid-row-gap: 16px;
+      display: grid;
+      grid-template-columns: repeat(1, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 8px;
+}
+
+@media (min-width: 600px) {
+  .smarthome-grid-div {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 8px;
+  }
+
+  .smartcard-wrapper {
+    aspect-ratio: 1/1;
+  }
+
+  .smartgraph-wrapper {
+    grid-row: span 2;
+    grid-column: span 2;
+  }
 }
 
 .smartcard-wrapper {
   display: inline-block;
   position: relative;
+  grid-row: span 1;
+  grid-column: span 1;
 }
 
 .smartgraph-wrapper {
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
-  grid-row: span 2;
 }
 
 .smartcard-overlay {
@@ -63,7 +87,7 @@ p {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position:absolute;
+  position: absolute;
   inset: 0;
   border: none;
   border-radius: 10px;
@@ -73,19 +97,19 @@ p {
   background-color: rgba(0, 0, 0, 0.60);
   backdrop-filter: blur(2px);
   z-index: 10;
+  margin: auto;
+  width: 98%;
+  height: 98%;
 }
 
 .smartCard {
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 130px;
-  margin: auto;
   background-color: #494F52;
   border: 3px solid darkcyan;
   box-shadow: 0 0 15px 4px darkcyan;
   border-radius: 10px;
   padding: 15px;
+  width: 100%;
+  height: 100%;
 }
 
 .upperCardDiv {
@@ -105,7 +129,7 @@ p {
 .lowerLeftCardDiv {
   text-align: left;
   width: 100%;
-}
+} 
 
 .smartCardLogoDiv {
   margin: auto 0;

@@ -7,7 +7,7 @@ const iconsObj = {
   'default': CircleQuestionMark
 }
 
-export default function SmartCard({title = 'No name', icon, temp, isOn, isBusy, actionError, statusError, toggleLed}) {  
+export default function SmartCard({title = 'No name', icon, isOn, isBusy, actionError, statusError, toggleLed}) {  
   const IconComponent = iconsObj[icon] ?? iconsObj.default
   
   return (
@@ -34,7 +34,7 @@ export default function SmartCard({title = 'No name', icon, temp, isOn, isBusy, 
 
         <div className='lowerCardDiv'>
           <div className='lowerLeftCardDiv'>
-            <h3 className='smartCardTitle' style={{margin: '5px 0'}}>{title}</h3>
+            <h3 style={{margin: '5px 0'}}>{title}</h3>
             <div style={{display: 'flex', justifyContent: 'space-between'}}>
               <p className={`
                 ${(isBusy && !actionError) ? 'busy' : null} 
@@ -42,18 +42,16 @@ export default function SmartCard({title = 'No name', icon, temp, isOn, isBusy, 
                 ${actionError || statusError ? 'error' : null}
               `} 
               style={{margin: '5px 0'}}>{actionError || statusError ? 'Error' : isBusy ? 'Busy' : isOn ? 'On' : 'Off'}</p>
-              <p style={{margin: '5px 0'}}>{temp}</p>
             </div>
           </div>
         </div>
-      </button>
 
-      {statusError && 
-      <div className='smartcard-overlay'>
-        <WifiOff style={{width: '40px', height: '40px'}} />
-        <p style={{height: 'fit-content', margin: '0', fontWeight: '900'}}>Connection Lost...</p>
-      </div>
-      }
+        {statusError && 
+        <div className='smartcard-overlay'>
+          <WifiOff style={{width: '40px', height: '40px'}} />
+        </div>
+        }
+      </button>
     </div>
   )
 }
