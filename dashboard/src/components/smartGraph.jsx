@@ -4,7 +4,7 @@ export default function SmartGraph({device}) {
     return (
         <>  
             <div className='smartgraph-wrapper'>
-                <AreaChartComponent telemetryData={device} />
+                <AreaChartComponent device={device} />
             </div>
         </>
     )
