@@ -2,7 +2,7 @@ export async function fetchWithRetry(url, { retries = 2, baseDelayMs = 200, meth
     let attempt = 0
 
     const controller = new AbortController()
-    setTimeout(() => controller.abort(), 2500)
+    const timeoutId = setTimeout(() => controller.abort(), 2500)
 
     while (true) {
       try {
@@ -14,8 +14,9 @@ export async function fetchWithRetry(url, { retries = 2, baseDelayMs = 200, meth
             headers: {"Content-Type": "application/json"}, 
             method, 
             body: parsedBody 
-          }
-        )
+          })
+
+        clearTimeout(timeoutId)
 
         // Success
         if (res.ok) return res
