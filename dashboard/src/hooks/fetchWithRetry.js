@@ -1,13 +1,16 @@
 export async function fetchWithRetry(url, { retries = 2, baseDelayMs = 200, method = 'GET', body } = {}) {
     let attempt = 0
 
+    const controller = new AbortController()
+    setTimeout(() => controller.abort(), 2500)
+
     while (true) {
       try {
         const isBodyDefined = body !== undefined && body !== null
         const parsedBody = isBodyDefined ? JSON.stringify(body) : undefined
         const res = await fetch(url, 
           { 
-            signal: AbortSignal.timeout(2500), 
+            signal: controller.signal, 
             headers: {"Content-Type": "application/json"}, 
             method, 
             body: parsedBody 
