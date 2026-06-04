@@ -237,13 +237,13 @@ app.post('/telemetry', async (req, res) => {
 	db.serialize( () => {
 
 		db.run(
-			'INSERT OR IGNORE INTO devices(id, led, temp) VALUES (?, ?, ?)',
-			[machineId, led, temp]
+			'INSERT OR IGNORE INTO devices(id, led, temp, humidity) VALUES (?, ?, ?, ?)',
+			[machineId, led, temp, humidity]
 		)
 
 		db.run(
-			'UPDATE devices SET temp = ? WHERE id = ?',
-			[temp, machineId]
+			'UPDATE devices SET temp = ?, humidity = ? WHERE id = ?',
+			[temp, humidity, machineId]
 		)
 
 		db.get(
