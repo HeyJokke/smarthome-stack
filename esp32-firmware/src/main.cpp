@@ -4,13 +4,18 @@
 #include "secrets.h"
 #include "cstring"
 #include "HTTPClient.h"
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
 
 WebServer server(80);
 WiFiClient client;
 
 int LED = 27;
-int tempPin = 34;
+int tempPin = 4;
 int photosensPin = 35;
+
+DHT_Unified dht(tempPin, DHT22);
 
 unsigned long uptime_ms;
 unsigned long lastPostMs = 0;
@@ -109,10 +114,14 @@ void handleLedBlink() {
 
 // Sensor handlers
 float readTemp() {
-  int raw = analogRead(tempPin);
-  float temperature = ( raw / 4095.0 ) * 100.0;
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+    return -1;
+  }
 
-  return temperature;
+  return event.temperature;
 }
 
 void handleTemp() {
@@ -214,6 +223,11 @@ void postTelemetry() {
 
 void setup() {
   Serial.begin(115200);
+
+  dht.begin();
+  sensor_t sensor;
+  dht.temperature().getSensor(&sensor);
+
   delay(1000);
   Serial.println("=== SETUP STARTED ===");
   // Analog read resolution 0-4095
