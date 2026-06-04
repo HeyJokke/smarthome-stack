@@ -27,7 +27,7 @@ db.serialize(() => {
         `CREATE TABLE IF NOT EXISTS devices (
             id TEXT PRIMARY KEY,
             led INT,
-            temperature REAL,
+            temp REAL,
             humidity REAL,
             UNIQUE(id)
         )`
