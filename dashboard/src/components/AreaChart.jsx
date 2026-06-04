@@ -17,6 +17,12 @@ export default function AreaChartComponent({device}) {
                     stroke="#00a832"
                     fill="#00a832"
                 />
+                <Area 
+                    type="monotone" 
+                    dataKey="humidity" 
+                    stroke="#2d60ac"
+                    fill="#2d60ac"
+                />
             </AreaChart>
     )
 }
