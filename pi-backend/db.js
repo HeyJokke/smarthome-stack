@@ -11,8 +11,8 @@ db.serialize(() => {
             timestamp_hhmmss TEXT NOT NULL,
             led INT,
             temperature REAL,
+            humidity REAL,
             machine_uptime_ms INT NOT NULL,
-            photo_sens INT NOT NULL,
             payload TEXT
         )`
     )
@@ -21,7 +21,8 @@ db.serialize(() => {
         `CREATE TABLE IF NOT EXISTS devices (
             id TEXT PRIMARY KEY,
             led INT,
-            temp INT,
+            temperature REAL,
+            humidity REAL,
             UNIQUE(id)
         )`
     )

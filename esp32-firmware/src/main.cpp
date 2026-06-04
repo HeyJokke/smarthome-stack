@@ -12,10 +12,9 @@ WebServer server(80);
 WiFiClient client;
 
 int LED = 27;
-int tempPin = 4;
-int photosensPin = 35;
+int dhtPin = 4;
 
-DHT_Unified dht(tempPin, DHT22);
+DHT_Unified dht(dhtPin, DHT22);
 
 unsigned long uptime_ms;
 unsigned long lastPostMs = 0;
@@ -23,9 +22,6 @@ char ledStatus[8] = "";
 const char* machine_id = "esp32-1";
 const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/telemetry";
 String PI_LEDSTATE_URL = "http://192.168.0.63:3000/api/devices/" + String(machine_id) + "/state";
-int tempStatus;
-int photosens;
-int led;
 
 void handleRoot() {
   server.send(200, "text/plain", "Hello from ESP32!");
@@ -131,33 +127,38 @@ void handleTemp() {
   server.send(200, "application/json", jsonTemp);
 }
 
-int readPhotosens() {
-  int raw = analogRead(photosensPin);
+float readHumidity() {
+  sensors_event_t event;
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity!"));
+    return -1;
+  }
 
-  return raw;
+  return event.relative_humidity;
 }
 
-void handlePhotosensitive() {
-  int photosens = readPhotosens();
+void handleHumidity() {
+  float humidity = readHumidity();
 
-  String jsonPhotosens = "{\"Photosensitivity\": " + String(photosens) + "}";
-  server.send(200, "application/json", jsonPhotosens);
+  String jsonTemp = "{\"Humidity\":" + String(humidity) + "}";
+  server.send(200, "application/json", jsonTemp);
 }
 
 void handleStatus() {
   const float temperature = readTemp();
-  const float photosens = readPhotosens();
+  const float humidity = readHumidity();
   uptime_ms = millis();
 
   String jsonLedStatus = "\"LED\": \"" + String(ledStatus) + "\"";
   String jsonTempStatus = "\"Temperature\": " + String(temperature, 2);
-  String jsonPhotosens = "\"Photosensitivity\": " + String(photosens);
+  String jsonHumidityStatus = "\"Humidity\": " + String(humidity, 2);
   String jsonUptimeStatus = "\"Uptime\": " + String(uptime_ms);
 
   String jsonDeviceStatus = "{";
   jsonDeviceStatus += jsonLedStatus + ",";
   jsonDeviceStatus += jsonTempStatus + ",";
-  jsonDeviceStatus += jsonPhotosens + ",";
+  jsonDeviceStatus += jsonHumidityStatus + ",";
   jsonDeviceStatus += jsonUptimeStatus;
   jsonDeviceStatus += "}";
 
@@ -170,8 +171,8 @@ void postTelemetry() {
     return;
   };
 
+  const float humidity = readHumidity();
   const float temperature = readTemp();
-  const int photo_sens = readPhotosens();
   const int led = readLed();
   uptime_ms = millis();
 
@@ -186,14 +187,14 @@ void postTelemetry() {
 
   String jsonMachineId = "\"machine_id\":\"" + String(machine_id) + "\"";
   String jsonTemp = "\"temperature\":" + String(temperature, 2);
-  String jsonPhotoSens = "\"photo_sens\":" + String(photo_sens);
+  String jsonHumidity = "\"humidity\":" + String(humidity, 2);
   String jsonLed = "\"led\":" + String(led);
   String jsonUptimeMs = "\"uptime_ms\":" + String(uptime_ms);
 
   String body = "{";
   body += jsonMachineId + ",";
   body += jsonTemp + ",";
-  body += jsonPhotoSens + ",";
+  body += jsonHumidity + ",";
   body += jsonLed + ",";
   body += jsonUptimeMs;
   body += "}";
@@ -261,8 +262,8 @@ void setup() {
   server.on("/led/off", handleLedOff);
   server.on("/led/blink", handleLedBlink);
   // Sensor endpoints
-  server.on("/sensor/temp", handleTemp);
-  server.on("/sensor/photosens", handlePhotosensitive);
+  server.on("/sensor/temperature", handleTemp);
+  server.on("/sensor/humidity", handleHumidity);
 
   // Start server
   server.begin();

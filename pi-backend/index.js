@@ -187,7 +187,7 @@ app.patch('/api/devices/:id/state', async (req, res) => {
 
 // Telemetry
 app.post('/telemetry', async (req, res) => {
-	const {machine_id, temperature, photo_sens, led, uptime_ms} = req.body
+	const {machine_id, temperature, humidity, led, uptime_ms} = req.body
 	const timestamp_iso = new Date().toISOString()
 	const timestamp_ms = Date.now()
 	
@@ -211,9 +211,9 @@ app.post('/telemetry', async (req, res) => {
 		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Uptime_ms is either NULL or not a number' })
 	}
 
-	const photoSens = photo_sens === undefined || photo_sens === null ? null : Number(photo_sens)
-	if (photoSens === null || !Number.isFinite(photoSens)) {
-		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Photosensitivity is either NULL or not a number' })
+	const humid = humidity === undefined || humidity === null ? null : Number(humidity)
+	if (humidity === null || !Number.isFinite(humidity)) {
+		return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Humidity is either NULL or not a number' })
 	}
 
 	const ledState = led === undefined || led === null ? null : Number(led)
@@ -226,9 +226,9 @@ app.post('/telemetry', async (req, res) => {
 		timestamp: timestamp_ms, // server event time
 		timestamp_iso, // human readable event time from server
 		machine_uptime_ms: uptimeMs, // uptime in ms of device
-		photo_sens: photoSens, // photo sensitivity sensor value from device
 		led: ledState, // led state value
-		temperature: temp // temperature sensor value from device
+		temperature: temp, // temperature sensor value from device
+		humidity: humidity // humidity sensor value from device
 	}
 
 	// Include modified or extra values in payload
@@ -272,8 +272,8 @@ app.post('/telemetry', async (req, res) => {
 		)
 
 		db.run(
-			'INSERT INTO telemetry(machine_id, timestamp, timestamp_hhmmss, led, temperature, machine_uptime_ms, photo_sens, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-			[machineId, timestamp_ms, timestamp_iso.slice(11,-8), ledState, temp, uptimeMs, photoSens, payload ?? null],
+			'INSERT INTO telemetry(machine_id, timestamp, timestamp_hhmmss, led, temperature, machine_uptime_ms, humidity, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+			[machineId, timestamp_ms, timestamp_iso.slice(11,-8), ledState, temp, uptimeMs, humid, payload ?? null],
 			function (err) {
 				if (err) return res.status(500).json({ ok: false, payload: null ,error: err.message })
 	
