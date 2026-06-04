@@ -138,8 +138,8 @@ app.put('/api/devices/:id/led', async (req, res) => {
 
 app.patch('/api/devices/:id/state', async (req, res) => {
 	const { id } = req.params
-	const { LED } = req.body
-	
+	const { led, temperature, humidity } = req.body
+
 	db.get(
 		`SELECT * FROM devices WHERE id = ?`,
 		[id],
@@ -152,18 +152,29 @@ app.patch('/api/devices/:id/state', async (req, res) => {
 				if (row) {
 					// ROW RETURNED
 
-					const ledState = LED === undefined || LED === null ? null : Number(LED)
-					if (ledState === null || !Number.isFinite(ledState)) {
+					const ledState = led === undefined || led === null ? null : Number(led)
+					if (led === null || !Number.isFinite(led)) {
 						return res.status(400).json({ ok: false, device: null, error: 'ERROR: LED state is null or not a number' })
 					}
 
-					db.run('UPDATE devices SET led = ? WHERE id = ?', [ledState, id])
+					const temp = temperature === undefined || temperature === null ? null : Number(temperature)
+					if (temp === null || !Number.isFinite(temp)) {
+						return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Temperature is either NULL or not a number' })
+					}
+
+					const humid = humidity === undefined || humidity === null ? null : Number(humidity)
+					if (humidity === null || !Number.isFinite(humidity)) {
+						return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Humidity is either NULL or not a number' })
+					}
+
+					db.run('UPDATE devices SET led = ?, temp = ?, humidity = ? WHERE id = ?', [ledState, temp, humid, id])
 					
 					for (const client of clients) {
 						const obj = {
 							id,
 							led: ledState,
-							temp: row.temp
+							temp: temp,
+							humidity: humid
 						}
 						const payload = JSON.stringify(obj)
 
@@ -172,7 +183,7 @@ app.patch('/api/devices/:id/state', async (req, res) => {
 						}
 					}
 
-					return res.status(201).json({ ok: true, device: {...row, led: LED}, error: null })
+					return res.status(201).json({ ok: true, device: {...row, led: led, temp: temp, humidity: humid}, error: null })
 				} else {
 					// NO SUCH DEVICES FOUND
 					return res.status(500).json({ ok: false, device: null, error: 'ERROR: No matches to device id' })

@@ -17,31 +17,55 @@ int dhtPin = 4;
 DHT_Unified dht(dhtPin, DHT22);
 
 unsigned long uptime_ms;
-unsigned long lastPostMs = 0;
+unsigned long lastStateMs = 0;
+unsigned long lastTelemetryMs = 0;
 char ledStatus[8] = "";
 const char* machine_id = "esp32-1";
-const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/telemetry";
-String PI_LEDSTATE_URL = "http://192.168.0.63:3000/api/devices/" + String(machine_id) + "/state";
+const char* PI_TELEMETRY_URL = "http://192.168.0.53:3000/telemetry";
+String PI_LEDSTATE_URL = "http://192.168.0.53:3000/api/devices/" + String(machine_id) + "/state";
 
 void handleRoot() {
   server.send(200, "text/plain", "Hello from ESP32!");
 }
 
-// LED handlers
+// Sensor handlers
 int readLed() {
   int raw = digitalRead(LED);
   return raw;
 }
 
-void postLed() {
+float readTemp() {
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+    return -1;
+  }
+
+  return event.temperature;
+}
+
+float readHumidity() {
+  sensors_event_t event;
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity!"));
+    return -1;
+  }
+
+  return event.relative_humidity;
+}
+
+void postState() {
   // check wifi status before starting
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.print("postLed: No internet connection yet.");
+    Serial.print("postState: No internet connection yet.");
     return;
   }
 
-  // read and save state from readLed()
-  const int ledStatus = readLed();
+  const int led = readLed();
+  const float humidity = readHumidity();
+  const float temperature = readTemp();
 
   // begin http - hit the endpoint in the pi http://192.168.0.63:3000/api/devices/:id/state
   HTTPClient http;
@@ -54,10 +78,17 @@ void postLed() {
   http.addHeader("Content-Type", "application/json");
   http.addHeader("Connection", "close");
   // set json header
-  String jsonDeviceLed = "\"LED\": " + String(ledStatus);
+  String jsonLed = "\"led\":" + String(led);
+  String jsonTemp = "\"temperature\":" + String(temperature, 2);
+  String jsonHumidity = "\"humidity\":" + String(humidity, 2);
+
   String jsonDeviceState = "{";
-  jsonDeviceState += jsonDeviceLed;
+  jsonDeviceState += jsonLed + ",";
+  jsonDeviceState += jsonTemp + ",";
+  jsonDeviceState += jsonHumidity;
   jsonDeviceState += "}";
+
+  Serial.println(jsonDeviceState);
 
   http.addHeader("Content-Length", String(jsonDeviceState.length()));
 
@@ -66,10 +97,10 @@ void postLed() {
   // handle errors
   if (code > 0) {
     String response = http.getString();
-    Serial.print("postLed: Response = ");
+    Serial.print("postState: Response = ");
     Serial.println(response);
   } else {
-    Serial.print("postLed: Error = ");
+    Serial.print("postState: Error = ");
     Serial.println(http.errorToString(code));
   }
   // end http
@@ -79,15 +110,15 @@ void postLed() {
 void handleLedOff() {
   digitalWrite(LED, LOW);
   strncpy(ledStatus, "OFF", sizeof(ledStatus));
-  server.send(200, "application/json", "{\"LED\": \"OFF\"}");
-  postLed();
+  server.send(200, "application/json", "{\"led\": \"OFF\"}");
+  postState();
 }
 
 void handleLedOn() {
   digitalWrite(LED, HIGH);
   strncpy(ledStatus, "ON", sizeof(ledStatus));
-  server.send(200, "application/json", "{\"LED\": \"ON\"}");
-  postLed();
+  server.send(200, "application/json", "{\"led\": \"ON\"}");
+  postState();
 }
 
 void handleLedBlink() {
@@ -105,19 +136,7 @@ void handleLedBlink() {
   delay(200);
   digitalWrite(LED, LOW);
 
-  server.send(200, "application/json", "{\"LED\": \"BLINKED\"}");
-}
-
-// Sensor handlers
-float readTemp() {
-  sensors_event_t event;
-  dht.temperature().getEvent(&event);
-  if (isnan(event.temperature)) {
-    Serial.println(F("Error reading temperature!"));
-    return -1;
-  }
-
-  return event.temperature;
+  server.send(200, "application/json", "{\"led\": \"BLINKED\"}");
 }
 
 void handleTemp() {
@@ -127,16 +146,6 @@ void handleTemp() {
   server.send(200, "application/json", jsonTemp);
 }
 
-float readHumidity() {
-  sensors_event_t event;
-  dht.humidity().getEvent(&event);
-  if (isnan(event.relative_humidity)) {
-    Serial.println(F("Error reading humidity!"));
-    return -1;
-  }
-
-  return event.relative_humidity;
-}
 
 void handleHumidity() {
   float humidity = readHumidity();
@@ -150,10 +159,10 @@ void handleStatus() {
   const float humidity = readHumidity();
   uptime_ms = millis();
 
-  String jsonLedStatus = "\"LED\": \"" + String(ledStatus) + "\"";
-  String jsonTempStatus = "\"Temperature\": " + String(temperature, 2);
-  String jsonHumidityStatus = "\"Humidity\": " + String(humidity, 2);
-  String jsonUptimeStatus = "\"Uptime\": " + String(uptime_ms);
+  String jsonLedStatus = "\"led\": \"" + String(ledStatus) + "\"";
+  String jsonTempStatus = "\"temperature\": " + String(temperature, 2);
+  String jsonHumidityStatus = "\"humidity\": " + String(humidity, 2);
+  String jsonUptimeStatus = "\"uptime\": " + String(uptime_ms);
 
   String jsonDeviceStatus = "{";
   jsonDeviceStatus += jsonLedStatus + ",";
@@ -167,7 +176,7 @@ void handleStatus() {
 
 void postTelemetry() {
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("postTest: No internet connection yet.");
+    Serial.println("postTelemetry: No internet connection yet.");
     return;
   };
 
@@ -212,10 +221,10 @@ void postTelemetry() {
   // Error code
   if (code > 0) {
     String response = http.getString();
-    Serial.print("postTest: Response = ");
+    Serial.print("postTelemetry: Response = ");
     Serial.println(response);
   } else {
-    Serial.print("postTest: Error: ");
+    Serial.print("postTelemetry: Error: ");
     Serial.println(http.errorToString(code));
   };
 
@@ -271,6 +280,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   postTelemetry();
+  postState();
 }
 
 void loop() {
@@ -278,9 +288,13 @@ void loop() {
 
   unsigned long now = millis();
 
-  // Non-blocking loop for POST status
-  if (now - lastPostMs >= 30000) {
-    lastPostMs = now;
+  if (now - lastStateMs >= 30000) {
+    lastStateMs = now;
+    postState();
+  }
+
+  if (now - lastTelemetryMs >= 300000) {
+    lastTelemetryMs = now;
     postTelemetry();
   }
 
