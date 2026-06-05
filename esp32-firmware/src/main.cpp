@@ -21,8 +21,8 @@ unsigned long lastStateMs = 0;
 unsigned long lastTelemetryMs = 0;
 char ledStatus[8] = "";
 const char* machine_id = "esp32-1";
-const char* PI_TELEMETRY_URL = "http://192.168.0.53:3000/telemetry";
-String PI_LEDSTATE_URL = "http://192.168.0.53:3000/api/devices/" + String(machine_id) + "/state";
+const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/telemetry";
+String PI_LEDSTATE_URL = "http://192.168.0.63:3000/api/devices/" + String(machine_id) + "/state";
 
 void handleRoot() {
   server.send(200, "text/plain", "Hello from ESP32!");
@@ -87,8 +87,6 @@ void postState() {
   jsonDeviceState += jsonTemp + ",";
   jsonDeviceState += jsonHumidity;
   jsonDeviceState += "}";
-
-  Serial.println(jsonDeviceState);
 
   http.addHeader("Content-Length", String(jsonDeviceState.length()));
 
@@ -280,7 +278,6 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   postTelemetry();
-  postState();
 }
 
 void loop() {
