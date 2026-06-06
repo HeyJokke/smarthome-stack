@@ -59,7 +59,7 @@ export function useEsp32State({ device }) {
 
       const getTelemetryData = React.useCallback( async () => {
         try {
-            const res = await fetch(`${API_BASE}/telemetry?limit=100`)
+            const res = await fetch(`${API_BASE}/api/devices/${device}/telemetry?limit=100`)
 
             if (!res.ok) {
                 throw new Error('fetchTelemetryData: ERROR FAILED TO FETCH')
