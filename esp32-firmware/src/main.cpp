@@ -20,7 +20,7 @@ unsigned long uptime_ms;
 unsigned long lastStateMs = 0;
 unsigned long lastTelemetryMs = 0;
 char ledStatus[8] = "";
-const char* machine_id = "esp32-2";
+const char* machine_id = "livingroom";
 const char* PI_TELEMETRY_URL = "http://192.168.0.63:3000/telemetry";
 String PI_LEDSTATE_URL = "http://192.168.0.63:3000/api/devices/" + String(machine_id) + "/state";
 

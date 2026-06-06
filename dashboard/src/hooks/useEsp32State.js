@@ -38,8 +38,9 @@ export function useEsp32State({ device }) {
           try {
             const res = await fetchWithRetry(`${API_BASE}/api/devices/${device}/status`, { retries: 2 })
             if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
-
+            
             const data = await res.json()
+
             setActionError(null)
             setStatusError(null)
 
@@ -79,14 +80,16 @@ export function useEsp32State({ device }) {
         const ws = new WebSocket('ws://' + LOCAL_IP)
 
         ws.onmessage = (event) => {
-            const {led, temp} = JSON.parse(event.data)
-            
-            setTemp(temp)
+            const {id, led, temp} = JSON.parse(event.data)
 
-            if (led === 1) setIsOn(true)
-            else setIsOn(false)
-
-            getTelemetryData()
+            if (id === device) {
+                setTemp(temp)
+    
+                if (led === 1) setIsOn(true)
+                else setIsOn(false)
+    
+                getTelemetryData()
+            }
         }
 
         return () => ws.close()

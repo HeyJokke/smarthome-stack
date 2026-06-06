@@ -6,7 +6,6 @@ import SmartGraph from './components/smartGraph';
 function App() {
   const livingRoom = useEsp32State({device: 'livingroom'})
   const office = useEsp32State({device: 'office'})
-
   return (
     <>
       <div className='smarthome-grid-div'>

@@ -1,6 +1,6 @@
 export async function fetchWithRetry(url, { retries = 2, baseDelayMs = 200, method = 'GET', body } = {}) {
     let attempt = 0
-
+    
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 2500)
 

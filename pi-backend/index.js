@@ -49,7 +49,6 @@ function getDeviceOr404(id, res) {
 // Status from all devices for frontend
 app.get('/api/devices/:id/status', async (req, res) => {
 	const device = getDeviceOr404(req.params.id, res)
-	console.log('Status: ', req.params.id, device.baseUrl)
 	if (!device) return
 
 	try {
@@ -87,7 +86,8 @@ app.get('/telemetry/latest', (req, res) => {
 })
 
 // Telemetry entries with limit
-app.get('/telemetry', (req, res) => {
+app.get('/api/devices/:id/telemetry', (req, res) => {
+	const { id } = req.params
 	let limit = Number(req.query.limit ?? 0)
 
 	if (!Number.isFinite(limit) || limit <= 0) {
@@ -97,8 +97,8 @@ app.get('/telemetry', (req, res) => {
 	if (limit > 1000) limit = 1000
 
 	db.all(
-		`SELECT * FROM telemetry ORDER BY timestamp DESC LIMIT (?)`,
-		[limit],
+		`SELECT * FROM telemetry WHERE machine_id = ? ORDER BY timestamp DESC LIMIT (?)`,
+		[id, limit],
 		(err, rows) => {
 			if (err) {
 				return res.status(500).json({ ok: false, payload: null, error: err.message })
