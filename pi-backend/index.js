@@ -32,7 +32,8 @@ wss.on('connection', (ws) => {
 })
 
 const DEVICES = {
-	livingroom: { baseUrl: "http://192.168.0.70" }
+	livingroom: { baseUrl: "http://192.168.0.70" },
+	office: { baseUrl: "http://192.168.0.71" }
 }
 
 function getDeviceOr404(id, res) {

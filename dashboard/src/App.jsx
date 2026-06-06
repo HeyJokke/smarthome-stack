@@ -5,12 +5,13 @@ import SmartGraph from './components/smartGraph';
 
 function App() {
   const livingRoom = useEsp32State({device: 'livingroom'})
+  const office = useEsp32State({device: 'office'})
 
   return (
     <>
       <div className='smarthome-grid-div'>
         <SmartGraph device={livingRoom}/>
-        <SmartGraph device={livingRoom}/>
+        <SmartGraph device={office}/>
         <SmartCard
           title={'Living Room'}
           icon={'led'}
@@ -18,9 +19,9 @@ function App() {
         />
 
         <SmartCard
-          title={'Living Room'}
+          title={'Office'}
           icon={'led'}
-          {...livingRoom}
+          {...office}
         />
 
         

@@ -16,8 +16,10 @@ export default function AreaChartComponent({device}) {
                 )}
     })
 
+    if (!formatData || formatData.length === 0) return null
+
     return (
-            formatData && (<AreaChart data={formatData} margin={{ left: 0, right: 15, bottom: 0, top: 15 }} height="100%" width="100%">
+            <AreaChart data={formatData} margin={{ left: 0, right: 15, bottom: 0, top: 15 }} height="100%" width="100%">
                 <YAxis yAxisId="left" width="auto" type="number" domain={[15,30]}/>
                 <YAxis yAxisId="right" orientation='right' width="auto" type="number" domain={[10,90]}/>
                 <Tooltip 
@@ -43,6 +45,6 @@ export default function AreaChartComponent({device}) {
                     fill="#00a832"
                 />
                 
-            </AreaChart>)
+            </AreaChart>
     )
 }
