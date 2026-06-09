@@ -7,9 +7,9 @@ const iconsObj = {
   'default': CircleQuestionMark
 }
 
-export default function SmartCard({title = 'No name', icon, isOn, isBusy, actionError, statusError, toggleLed}) {  
+export default function SmartCard({title = 'No name', icon, isBusy, actionError, statusError, toggleLed, state}) {  
   const IconComponent = iconsObj[icon] ?? iconsObj.default
-  
+
   return (
     <div className='smartcard-wrapper'>
 
@@ -17,7 +17,7 @@ export default function SmartCard({title = 'No name', icon, isOn, isBusy, action
         className={`
           smartCard 
           ${(isBusy && !actionError) ? 'busy' : null} 
-          ${(isOn && !isBusy  && !actionError) ? 'on' : null} 
+          ${(state.led && !isBusy  && !actionError) ? 'on' : null} 
           ${actionError ? 'error' : null}
         `}
         onClick={toggleLed}
@@ -25,10 +25,10 @@ export default function SmartCard({title = 'No name', icon, isOn, isBusy, action
       >
         
         <div className='upperCardDiv'>
-          <div className={`smartCardLogoDiv ${(isOn && !isBusy  && !actionError) ? 'on' : null}`}>
+          <div className={`smartCardLogoDiv ${(state.led && !isBusy  && !actionError) ? 'on' : null}`}>
             <IconComponent className='smartCardLogo' style={{width: '20px', height: '20px'}}/>
           </div>
-          <input readOnly={true} checked={isOn && !actionError} type="checkbox"/>
+          <input readOnly={true} checked={state.led && !actionError} type="checkbox"/>
           <div className="slide-toggle"></div>
         </div>
 
@@ -38,16 +38,16 @@ export default function SmartCard({title = 'No name', icon, isOn, isBusy, action
             <div style={{display: 'flex', justifyContent: 'space-between'}}>
               <p className={`
                 ${(isBusy && !actionError) ? 'busy' : null} 
-                ${(isOn && !isBusy  && !actionError) ? 'on' : null} 
+                ${(state.led && !isBusy  && !actionError) ? 'on' : null} 
                 ${actionError || statusError ? 'error' : null}
               `} 
               style={{margin: '5px 0'}}>
               {
                 actionError || statusError ? 'Error' : 
                 isBusy ? 'Busy' : 
-                isOn ? 'On' : 
-                isOn === false ? 'Off' : 
-                isOn === null ? 'Connecting...' : null
+                state.led ? 'On' : 
+                state.led === false ? 'Off' : 
+                state.led === null ? 'Connecting...' : null
               }
               </p>
             </div>

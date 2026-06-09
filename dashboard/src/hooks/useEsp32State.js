@@ -2,7 +2,7 @@ import React from 'react'
 import { fetchWithRetry } from './fetchWithRetry';
 
 export function useEsp32State({ device }) {
-    const [state, setState] = React.useState({led: null, temp: null, humidity: null, error: null})
+    const [state, setState] = React.useState({id: null, led: null, temp: null, humidity: null})
     const [actionError, setActionError] = React.useState(null)
     const [isBusy, setIsBusy] = React.useState(false)
     const [telemetryData, setTelemetryData] = React.useState([])
@@ -41,8 +41,12 @@ export function useEsp32State({ device }) {
             }
 
             const data = await res.json()
-            console.log(data.payload)
-            setState(data.payload)
+            setState({
+                    id: data.id,
+                    led: data.led === 1, 
+                    temp: data.temp, 
+                    humidity: data.humidity
+                })
         } catch(err) {
             console.error(err.message)
         }
@@ -75,10 +79,10 @@ export function useEsp32State({ device }) {
 
             if (data.id === device) {
                 setState({
+                    id: data.id,
                     led: data.led === 1, 
                     temp: data.temp, 
-                    humidity: data.humidity,
-                    error: null
+                    humidity: data.humidity
                 })
     
                 getTelemetryData()

@@ -23,9 +23,21 @@ db.serialize(() => {
             led INT,
             temp REAL,
             humidity REAL,
+            last_seen INTEGER,
             UNIQUE(id)
         )`
     )
+
+    db.run(
+        `ALTER TABLE devices 
+        ADD COLUMN last_seen INTEGER DEFAULT 0`,
+        (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration failed:', err.message)
+            }
+        }
+    )
+
 })
 
 export default db

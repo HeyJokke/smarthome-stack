@@ -193,7 +193,7 @@ app.patch('/api/devices/:id/state', async (req, res) => {
 						return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Humidity is either NULL or not a number' })
 					}
 
-					db.run('UPDATE devices SET led = ?, temp = ?, humidity = ? WHERE id = ?', [ledState, temp, humid, id])
+					db.run('UPDATE devices SET led = ?, temp = ?, humidity = ?, last_seen = ? WHERE id = ?', [ledState, temp, humid, Date.now(), id])
 					
 					for (const client of clients) {
 						const obj = {
