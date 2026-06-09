@@ -14,7 +14,7 @@ const app = express()
 app.use(express.json())
 
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://192.168.0.63:3000']
+    origin: ['http://localhost:5173', 'http://192.168.0.63:3000', 'http://192.168.0.53:5173']
 }))
 
 const server = createServer(app)
