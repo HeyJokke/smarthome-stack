@@ -41,7 +41,15 @@ export default function SmartCard({title = 'No name', icon, isOn, isBusy, action
                 ${(isOn && !isBusy  && !actionError) ? 'on' : null} 
                 ${actionError || statusError ? 'error' : null}
               `} 
-              style={{margin: '5px 0'}}>{actionError || statusError ? 'Error' : isBusy ? 'Busy' : isOn ? 'On' : 'Off'}</p>
+              style={{margin: '5px 0'}}>
+              {
+                actionError || statusError ? 'Error' : 
+                isBusy ? 'Busy' : 
+                isOn ? 'On' : 
+                isOn === false ? 'Off' : 
+                isOn === null ? 'Connecting...' : null
+              }
+              </p>
             </div>
           </div>
         </div>

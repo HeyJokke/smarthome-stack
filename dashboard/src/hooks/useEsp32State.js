@@ -2,11 +2,9 @@ import React from 'react'
 import { fetchWithRetry } from './fetchWithRetry';
 
 export function useEsp32State({ device }) {
-    const [isOn, setIsOn] = React.useState(false)
-    const [isBusy, setIsBusy] = React.useState(false)
+    const [state, setState] = React.useState({led: null, temp: null, humidity: null, error: null})
     const [actionError, setActionError] = React.useState(null)
-    const [statusError, setStatusError] = React.useState(null)
-    const [temp, setTemp] = React.useState(0)
+    const [isBusy, setIsBusy] = React.useState(false)
     const [telemetryData, setTelemetryData] = React.useState([])
 
     // Configurations
@@ -14,7 +12,7 @@ export function useEsp32State({ device }) {
     const LOCAL_IP = import.meta.env.VITE_LOCAL_IP ?? "192.168.0.63:3000"
 
     async function toggleLed() {
-        const path = !isOn
+        const path = !state.led
         
         try {
             setIsBusy(true)
@@ -23,7 +21,7 @@ export function useEsp32State({ device }) {
             const res = await fetchWithRetry(`${API_BASE}/api/devices/${device}/led`, { method: 'PUT', body: { on: path }})
 
             if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
-            setIsOn(path)
+            setState({...state, led: path})
             } catch(err) {
                 const message = err?.message ?? 'An unknown error occured'
                 setActionError(message)
@@ -34,28 +32,21 @@ export function useEsp32State({ device }) {
             }
     }
 
-    const getLedStatus = React.useCallback( async () => {
-          try {
-            const res = await fetchWithRetry(`${API_BASE}/api/devices/${device}/status`, { retries: 2 })
-            if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
-            
-            const data = await res.json()
+    const getDeviceState = React.useCallback( async () => {
+        try {
+            const res = await fetch(`${API_BASE}/api/devices/${device}/state`)
 
-            setActionError(null)
-            setStatusError(null)
-
-            setTemp(data.Temperature)
-            if (data.LED === 'ON') {
-              setIsOn(true)
-            } else if (data.LED === 'OFF') {
-              setIsOn(false)
+            if (!res.ok) {
+                throw new Error('getDeviceState: ERROR FAILED TO FETCH')
             }
-          } catch(err) {
-            const message = err?.message ?? 'An unknown error occurred'
-            setStatusError(message)
-            console.error('[LED] Status failed: ', err)
-          }
-      }, [])
+
+            const data = await res.json()
+            console.log(data.payload)
+            setState(data.payload)
+        } catch(err) {
+            console.error(err.message)
+        }
+    },[] )
 
       const getTelemetryData = React.useCallback( async () => {
         try {
@@ -74,19 +65,21 @@ export function useEsp32State({ device }) {
       }, [])
 
     React.useEffect(() => {
-        getLedStatus()
+        getDeviceState()
         getTelemetryData()
         
         const ws = new WebSocket('ws://' + LOCAL_IP)
 
         ws.onmessage = (event) => {
-            const {id, led, temp} = JSON.parse(event.data)
+            const data = JSON.parse(event.data)
 
-            if (id === device) {
-                setTemp(temp)
-    
-                if (led === 1) setIsOn(true)
-                else setIsOn(false)
+            if (data.id === device) {
+                setState({
+                    led: data.led === 1, 
+                    temp: data.temp, 
+                    humidity: data.humidity,
+                    error: null
+                })
     
                 getTelemetryData()
             }
@@ -96,12 +89,10 @@ export function useEsp32State({ device }) {
     },[])
 
     return {
-        temp,
-        isOn,
+        state,
         isBusy,
-        actionError,
-        statusError,
         toggleLed,
+        actionError,
         telemetryData
     }
 }

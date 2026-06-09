@@ -65,6 +65,26 @@ app.get('/api/devices/:id/status', async (req, res) => {
 	}
 })
 
+// Initial status from all devices for frontend
+app.get('/api/devices/:id/state', async (req, res) => {
+	const { id } = req.params
+	
+	db.get(
+		'SELECT * FROM devices WHERE id = ?',
+		[id],
+		(err, row) => {
+			if (err) return res.status(500).json({ ok: false, payload: null, error: err.message })
+			if (!row) return res.status(404).json({ ok: false, payload: null, error: `ERROR 404 row could not fetch row data for machine id ${id}, possibly no connection to the DB or there are no rows` })
+
+			return res.status(200).json({
+				ok: true,
+				payload: row,
+				error: null
+			})
+		}
+	)
+})
+
 // Latest telemetry
 app.get('/telemetry/latest', (req, res) => {
 	db.get(
