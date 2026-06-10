@@ -41,7 +41,6 @@ export function useEsp32State({ device }) {
             }
 
             const { payload } = await res.json()
-            console.log('1', device, payload.live)
             setState({
                     id: payload.id,
                     led: payload.led === 1, 
@@ -80,15 +79,16 @@ export function useEsp32State({ device }) {
             const data = JSON.parse(event.data)
 
             if (data.type === 'device_live_update') {
-                const matchedDevice = data.devices.find((d) => { d.id === device })
-                
+                const matchedDevice = data.devices.find((d) => { 
+                    return d.id === device 
+                })
+
                 setState((prev) => ({
                     ...prev,
                     live: matchedDevice?.live === 1
                 }))
             } else {
                 if (data.id === device) {
-                    console.log('2', device, data.live)
                     setState({
                         id: data.id,
                         led: data.led === 1, 

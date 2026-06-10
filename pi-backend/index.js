@@ -246,6 +246,7 @@ app.patch('/api/devices/:id/state', async (req, res) => {
 							led: ledState,
 							temp: temp,
 							humidity: humid,
+							last_seen: Date.now(),
 							live: 1
 						}
 						const payload = JSON.stringify(obj)
