@@ -7,7 +7,7 @@ const iconsObj = {
   'default': CircleQuestionMark
 }
 
-export default function SmartCard({title = 'No name', icon, isBusy, actionError, statusError, toggleLed, state}) {  
+export default function SmartCard({title = 'No name', icon, isBusy, actionError, toggleLed, state}) {  
   const IconComponent = iconsObj[icon] ?? iconsObj.default
 
   return (
@@ -21,7 +21,7 @@ export default function SmartCard({title = 'No name', icon, isBusy, actionError,
           ${actionError ? 'error' : null}
         `}
         onClick={toggleLed}
-        disabled={isBusy || statusError}
+        disabled={isBusy || !state.live}
       >
         
         <div className='upperCardDiv'>
@@ -39,11 +39,11 @@ export default function SmartCard({title = 'No name', icon, isBusy, actionError,
               <p className={`
                 ${(isBusy && !actionError) ? 'busy' : null} 
                 ${(state.led && !isBusy  && !actionError) ? 'on' : null} 
-                ${actionError || statusError ? 'error' : null}
+                ${actionError || !state.live ? 'error' : null}
               `} 
               style={{margin: '5px 0'}}>
               {
-                actionError || statusError ? 'Error' : 
+                actionError || !state.live ? 'Error' : 
                 isBusy ? 'Busy' : 
                 state.led ? 'On' : 
                 state.led === false ? 'Off' : 
@@ -54,7 +54,7 @@ export default function SmartCard({title = 'No name', icon, isBusy, actionError,
           </div>
         </div>
 
-        {statusError && 
+        {!state.live && 
         <div className='smartcard-overlay'>
           <WifiOff style={{width: '40px', height: '40px'}} />
         </div>

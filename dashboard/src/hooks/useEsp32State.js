@@ -41,6 +41,7 @@ export function useEsp32State({ device }) {
             }
 
             const { payload } = await res.json()
+            console.log('1', device, payload.live)
             setState({
                     id: payload.id,
                     led: payload.led === 1, 
@@ -87,6 +88,7 @@ export function useEsp32State({ device }) {
                 }))
             } else {
                 if (data.id === device) {
+                    console.log('2', device, data.live)
                     setState({
                         id: data.id,
                         led: data.led === 1, 
