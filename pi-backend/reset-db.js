@@ -29,7 +29,8 @@ db.serialize(() => {
             led INT,
             temp REAL,
             humidity REAL,
-            last_seen INTEGER,
+            last_seen INTEGER DEFAULT 0,
+            live INTEGER DEFAULT 0,
             UNIQUE(id)
         )`
     )

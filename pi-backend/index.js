@@ -31,6 +31,50 @@ wss.on('connection', (ws) => {
 	})
 })
 
+// Send device live status every 30 seconds to frontend using websocket
+/* 
+setInteval
+now = date.now()
+db.run database update live = CASE
+where now - last_seen > 60000 
+error fallback
+broadcast updated live status to all connected frontends using websocket
+*/
+
+setInterval(() => {
+	const now = Date.now()
+
+	db.run(`
+		UPDATE devices SET live = CASE
+			WHEN ? - last_seen <= 60000 THEN 1
+			ELSE 0
+		END`,
+		(err) => {
+				if (err) {
+					console.error('Device Live Failed: ', err.message)
+					return
+				}
+
+				db.all('SELECT * FROM devices',
+					(err, rows) => {
+						if (err) return
+	
+						for (const client of clients) {
+							if (client.readyState === 1) {
+								client.send(JSON.stringify({
+									type: 'device_live_update',
+									devices: rows
+								}))
+							}
+						}
+					}
+				)
+			}
+	)
+
+}, 30000)
+
+
 const DEVICES = {
 	livingroom: { baseUrl: "http://192.168.0.70" },
 	office: { baseUrl: "http://192.168.0.71" }
@@ -140,7 +184,7 @@ app.get('/api/devices/:id/telemetry', (req, res) => {
 	)
 })
 
-// ----------------POST Endpoints----------------
+// ----------------POST/PATCH Endpoints----------------
 app.put('/api/devices/:id/led', async (req, res) => {
 	const { id } = req.params
 	const { on } = req.body
@@ -193,7 +237,7 @@ app.patch('/api/devices/:id/state', async (req, res) => {
 						return res.status(400).json({ ok: false, payload: null, error: 'ERROR: Humidity is either NULL or not a number' })
 					}
 
-					db.run('UPDATE devices SET led = ?, temp = ?, humidity = ?, last_seen = ? WHERE id = ?', [ledState, temp, humid, Date.now(), id])
+					db.run('UPDATE devices SET led = ?, temp = ?, humidity = ?, last_seen = ?, live = ? WHERE id = ?', [ledState, temp, humid, Date.now(), true, id])
 					
 					for (const client of clients) {
 						const obj = {

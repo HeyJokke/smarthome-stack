@@ -2,7 +2,7 @@ import React from 'react'
 import { fetchWithRetry } from './fetchWithRetry';
 
 export function useEsp32State({ device }) {
-    const [state, setState] = React.useState({id: null, led: null, temp: null, humidity: null})
+    const [state, setState] = React.useState({id: null, led: null, temp: null, humidity: null, live: null})
     const [actionError, setActionError] = React.useState(null)
     const [isBusy, setIsBusy] = React.useState(false)
     const [telemetryData, setTelemetryData] = React.useState([])
@@ -40,12 +40,12 @@ export function useEsp32State({ device }) {
                 throw new Error('getDeviceState: ERROR FAILED TO FETCH')
             }
 
-            const data = await res.json()
+            const { payload } = await res.json()
             setState({
-                    id: data.id,
-                    led: data.led === 1, 
-                    temp: data.temp, 
-                    humidity: data.humidity
+                    id: payload.id,
+                    led: payload.led === 1, 
+                    temp: payload.temp, 
+                    humidity: payload.humidity
                 })
         } catch(err) {
             console.error(err.message)
@@ -77,15 +77,19 @@ export function useEsp32State({ device }) {
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data)
 
-            if (data.id === device) {
-                setState({
-                    id: data.id,
-                    led: data.led === 1, 
-                    temp: data.temp, 
-                    humidity: data.humidity
-                })
-    
-                getTelemetryData()
+            if (data.type === 'device_live_update') {
+                console.log(data)
+            } else {
+                if (data.id === device) {
+                    setState({
+                        id: data.id,
+                        led: data.led === 1, 
+                        temp: data.temp, 
+                        humidity: data.humidity,
+                    })
+        
+                    getTelemetryData()
+                }
             }
         }
 
