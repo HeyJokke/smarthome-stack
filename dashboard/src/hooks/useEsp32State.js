@@ -45,7 +45,8 @@ export function useEsp32State({ device }) {
                     id: payload.id,
                     led: payload.led === 1, 
                     temp: payload.temp, 
-                    humidity: payload.humidity
+                    humidity: payload.humidity,
+                    live: payload.live === 1
                 })
         } catch(err) {
             console.error(err.message)
@@ -78,7 +79,12 @@ export function useEsp32State({ device }) {
             const data = JSON.parse(event.data)
 
             if (data.type === 'device_live_update') {
-                console.log(data)
+                const matchedDevice = data.devices.find((d) => { d.id === device })
+                
+                setState((prev) => ({
+                    ...prev,
+                    live: matchedDevice?.live === 1
+                }))
             } else {
                 if (data.id === device) {
                     setState({
@@ -86,6 +92,7 @@ export function useEsp32State({ device }) {
                         led: data.led === 1, 
                         temp: data.temp, 
                         humidity: data.humidity,
+                        live: data.live === 1
                     })
         
                     getTelemetryData()
@@ -95,6 +102,10 @@ export function useEsp32State({ device }) {
 
         return () => ws.close()
     },[])
+
+    React.useEffect(() => {
+    console.log('state updated:', state)
+}, [state])
 
     return {
         state,

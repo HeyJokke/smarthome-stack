@@ -49,6 +49,7 @@ setInterval(() => {
 			WHEN ? - last_seen <= 60000 THEN 1
 			ELSE 0
 		END`,
+		[now],
 		(err) => {
 				if (err) {
 					console.error('Device Live Failed: ', err.message)
