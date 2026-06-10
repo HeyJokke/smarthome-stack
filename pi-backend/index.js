@@ -245,7 +245,8 @@ app.patch('/api/devices/:id/state', async (req, res) => {
 							id,
 							led: ledState,
 							temp: temp,
-							humidity: humid
+							humidity: humid,
+							live: 1
 						}
 						const payload = JSON.stringify(obj)
 
@@ -342,7 +343,9 @@ app.post('/telemetry', async (req, res) => {
 					const obj = {
 						id: machineId,
 						led: row.led,
-						temp: row.temp
+						temp: row.temp,
+						last_seen: row.last_seen,
+						live: row.live
 					}
 					const payload = JSON.stringify(obj)
 
